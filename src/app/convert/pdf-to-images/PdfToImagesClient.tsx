@@ -14,17 +14,45 @@ export default function PdfToImagesClient() {
   const isDisabled = useMemo(() => isLoading || !file, [isLoading, file]);
 
   useEffect(() => {
-    // Load PDF.js dynamically
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.min.js';
-    script.onload = () => {
-      (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js';
-      setPdfjsLoaded(true);
+    // Load PDF.js from CDN
+    const loadPdfJs = () => {
+      return new Promise<void>((resolve, reject) => {
+        // First load the main PDF.js library
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.onload = () => {
+          // Then load the worker
+          const workerScript = document.createElement('script');
+          workerScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          workerScript.onload = () => {
+            // Set up worker and mark as loaded
+            (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = workerScript.src;
+            setPdfjsLoaded(true);
+            console.log('PDF.js and worker loaded successfully');
+            resolve();
+          };
+          workerScript.onerror = () => {
+            console.error('Failed to load PDF.js worker');
+            reject(new Error('Failed to load PDF.js worker'));
+          };
+          document.head.appendChild(workerScript);
+        };
+        script.onerror = () => {
+          console.error('Failed to load PDF.js');
+          reject(new Error('Failed to load PDF.js'));
+        };
+        document.head.appendChild(script);
+      });
     };
-    document.head.appendChild(script);
-    
+
+    loadPdfJs().catch(error => {
+      console.error('Error loading PDF.js:', error);
+    });
+
     return () => {
-      document.head.removeChild(script);
+      // Clean up scripts on unmount
+      const scripts = document.querySelectorAll('script[src*="pdf.js"]');
+      scripts.forEach(script => script.remove());
     };
   }, []);
 
@@ -51,10 +79,60 @@ export default function PdfToImagesClient() {
       if (!res.ok) {
         throw new Error(data.error || "Failed to convert PDF");
       }
-      const imgs: Array<{ name: string; url: string }> = data.pages.map((p: any) => ({
-        name: p.filename,
-        url: `data:${p.mime};base64,${p.base64}`,
-      }));
+      // Convert single-page PDFs to images using PDF.js
+      const imgs: Array<{ name: string; url: string }> = [];
+      
+      // Get PDF.js from window (dynamically loaded)
+      const pdfjsLib = (window as any).pdfjsLib;
+      if (!pdfjsLib) {
+        throw new Error("PDF.js not loaded yet. Please wait a moment and try again.");
+      }
+      
+      for (const page of data.pages) {
+        try {
+          // Convert base64 to Uint8Array
+          const binaryString = window.atob(page.base64);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let j = 0; j < binaryString.length; j++) {
+            bytes[j] = binaryString.charCodeAt(j);
+          }
+          
+          // Load the single-page PDF
+          const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+          const pageObj = await pdf.getPage(1);
+          
+          // Create canvas for rendering
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          if (!context) throw new Error("Canvas context not available");
+          
+          // Calculate dimensions based on density
+          const viewport = pageObj.getViewport({ scale: density / 72 });
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          
+          // Render PDF page to canvas
+          await pageObj.render({
+            canvasContext: context,
+            viewport: viewport,
+            canvas: canvas
+          }).promise;
+          
+          // Convert canvas to image
+          const imageDataUrl = canvas.toDataURL(`image/${target}`, 0.9);
+          
+          // Update filename to match target format
+          const imageName = page.filename.replace('.pdf', `.${target}`);
+          
+          imgs.push({
+            name: imageName,
+            url: imageDataUrl,
+          });
+        } catch (pageError) {
+          console.error(`Error converting page ${page.filename}:`, pageError);
+        }
+      }
+      
       setImages(imgs);
     } catch (e) {
       console.warn("Server conversion failed, trying client-side fallback with PDF.js");
@@ -63,8 +141,10 @@ export default function PdfToImagesClient() {
         return;
       }
       try {
+        // Get PDF.js from window (dynamically loaded)
         const pdfjsLib = (window as any).pdfjsLib;
         if (!pdfjsLib) throw new Error("PDF.js not available");
+        
         const buf = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
         const out: Array<{ name: string; url: string }> = [];
@@ -77,7 +157,7 @@ export default function PdfToImagesClient() {
           if (!ctx) continue;
           canvas.width = viewport.width as number;
           canvas.height = viewport.height as number;
-          await page.render({ canvasContext: ctx, viewport }).promise;
+          await page.render({ canvasContext: ctx, viewport, canvas }).promise;
           const url = canvas.toDataURL(target === "jpg" ? "image/jpeg" : target === "webp" ? "image/webp" : "image/png");
           out.push({ name: `page-${i}.${target}`, url });
         }
@@ -178,7 +258,7 @@ export default function PdfToImagesClient() {
           <button
             type="button"
             onClick={handleConvert}
-            disabled={isDisabled}
+            disabled={isDisabled || !pdfjsLoaded}
             className="h-10 px-5 rounded-md bg-black text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? "Converting…" : "Convert"}
@@ -186,7 +266,15 @@ export default function PdfToImagesClient() {
           <a href="/convert" className="h-10 px-5 rounded-md border border-black/[.08] text-sm hover:bg-black/[.03] inline-flex items-center">Back</a>
         </div>
         {!pdfjsLoaded && (
-          <p className="text-xs text-black/50">Loading PDF.js for client-side fallback...</p>
+          <div className="space-y-2">
+            <p className="text-xs text-black/50">Loading PDF.js...</p>
+            <div className="w-full bg-gray-200 rounded-full h-1">
+              <div className="bg-black h-1 rounded-full animate-pulse" style={{width: '60%'}}></div>
+            </div>
+          </div>
+        )}
+        {pdfjsLoaded && (
+          <p className="text-xs text-green-600">✓ PDF.js ready</p>
         )}
       </aside>
     </div>

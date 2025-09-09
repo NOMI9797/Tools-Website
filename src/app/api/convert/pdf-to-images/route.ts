@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
-import { promisify } from "util";
-import { writeFileSync, unlinkSync, readFileSync, existsSync, mkdirSync } from "fs";
-import { join } from "path";
-import { tmpdir } from "os";
-import sharp from "sharp";
-
-const execAsync = promisify(exec);
+import { PDFDocument } from "pdf-lib";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,7 +11,7 @@ export async function POST(req: Request) {
     const form = await req.formData();
     const file = form.get("file");
     const target = String(form.get("target") || "png").toLowerCase() as RasterFormat;
-    const density = String(form.get("density") || "144");
+    const density = Number(form.get("density") || "144");
 
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No PDF uploaded" }, { status: 400 });
@@ -38,121 +31,56 @@ export async function POST(req: Request) {
     }
 
     const inputBuffer = Buffer.from(await file.arrayBuffer());
-    // Create a specific output directory
-    const baseDir = join(process.cwd(), 'tmp');
-    const sessionDir = join(baseDir, `convert-${Date.now()}`);
-    mkdirSync(sessionDir, { recursive: true });
     
-    const inputPath = join(sessionDir, 'input.pdf');
-    const outputPrefix = join(sessionDir, 'page');
+    // Load PDF with pdf-lib
+    const pdfDoc = await PDFDocument.load(inputBuffer);
+    const pageCount = pdfDoc.getPageCount();
     
-    console.log("Input file size:", inputBuffer.length);
-    console.log("Writing to:", inputPath);
+    console.log(`PDF loaded: ${pageCount} pages`);
     
-    // Write PDF to temp file
-    writeFileSync(inputPath, inputBuffer);
-    
-    // Verify file was written
-    if (!existsSync(inputPath)) {
-      return NextResponse.json({ error: "Failed to write input file" }, { status: 500 });
+    if (pageCount === 0) {
+      return NextResponse.json({ error: "PDF has no pages" }, { status: 400 });
     }
-    
-    try {
-      // Verify input file size
-      const stats = readFileSync(inputPath);
-      console.log("Written file size:", stats.length);
-      
-      if (stats.length === 0) {
-        unlinkSync(inputPath);
-        return NextResponse.json({ error: "Empty PDF file" }, { status: 400 });
-      }
-      // First verify PDF is valid using pdfinfo
+
+    const pages: Array<{ filename: string; base64: string; mime: string }> = [];
+
+    // For each page, create a single-page PDF and return it as base64
+    // The client will handle the PDF-to-image conversion using PDF.js
+    for (let i = 0; i < pageCount; i++) {
       try {
-        const { stdout: pdfInfo } = await execAsync(`/opt/homebrew/bin/pdfinfo "${inputPath}"`);
-        console.log("PDF Info:", pdfInfo);
+        // Create a new PDF with just this page
+        const singlePagePdf = await PDFDocument.create();
+        const [copiedPage] = await singlePagePdf.copyPages(pdfDoc, [i]);
+        singlePagePdf.addPage(copiedPage);
         
-        if (!pdfInfo.includes("Pages:")) {
-          throw new Error("Invalid PDF structure");
-        }
-      } catch (e) {
-        console.error("PDF validation failed:", e);
-        return NextResponse.json({ error: "Invalid or corrupted PDF file" }, { status: 400 });
-      }
-
-      // Use pdftoppm with verbose mode and error checking
-      // Always convert to PNG first
-      const command = `/opt/homebrew/bin/pdftoppm -singlefile -png "${inputPath}" "${outputPrefix}"`;
-      console.log("Executing command:", command);
-      
-      console.log("Running pdftoppm...");
-      const { stdout, stderr } = await execAsync(command, {
-        env: { ...process.env, PATH: '/opt/homebrew/bin:' + process.env.PATH },
-        cwd: sessionDir
-      });
-      console.log("pdftoppm stdout:", stdout || "No stdout");
-      console.log("pdftoppm stderr:", stderr || "No stderr");
-      
-      // Wait a moment for files to be written
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Collect all generated images
-      const pages: Array<{ filename: string; base64: string; mime: string }> = [];
-      let idx = 1;
-      
-      // Look for PNG output
-      const pngFile = `${outputPrefix}.png`;
-      if (existsSync(pngFile)) {
-        let finalBuffer: Buffer;
-        const pngBuffer = readFileSync(pngFile);
-
-        // Convert to target format if not PNG
-        try {
-          if (target === "webp") {
-            finalBuffer = await sharp(pngBuffer)
-              .webp({ quality: 90 })
-              .toBuffer();
-          } else if (target === "jpg") {
-            finalBuffer = await sharp(pngBuffer)
-              .jpeg({ quality: 90 })
-              .toBuffer();
-          } else {
-            finalBuffer = pngBuffer;
-          }
-        } catch (conversionError) {
-          console.error("Image conversion error:", conversionError);
-          throw new Error(`Failed to convert to ${target} format`);
-        }
-
-        const mime = target === "png" ? "image/png" : target === "jpg" ? "image/jpeg" : "image/webp";
-        pages.push({
-          filename: `page-1.${target}`,
-          base64: finalBuffer.toString("base64"),
-          mime,
+        // Get the PDF bytes for this single page with specific format
+        const singlePageBytes = await singlePagePdf.save({
+          useObjectStreams: false, // More compatible format
+          addDefaultPage: false
         });
         
-        // Clean up temp file
-        unlinkSync(pngFile);
+        // Return the single-page PDF as base64
+        // The client will convert this to an image using PDF.js
+        pages.push({
+          filename: `page-${i + 1}.pdf`,
+          base64: Buffer.from(singlePageBytes).toString("base64"),
+          mime: "application/pdf",
+        });
+        
+        console.log(`Page ${i + 1} extracted successfully`);
+      } catch (pageError) {
+        console.error(`Error extracting page ${i + 1}:`, pageError);
+        // Continue with other pages
       }
-      
-      // Clean up input file
-      unlinkSync(inputPath);
-      
-      if (pages.length === 0) {
-        console.log("No output files generated. Command may have failed silently.");
-        return NextResponse.json({ error: "Failed to convert PDF. The file may be corrupted or password-protected." }, { status: 400 });
-      }
-
-      return NextResponse.json({ pages }, { status: 200 });
-    } catch (execError) {
-      // Clean up on error
-      try { unlinkSync(inputPath); } catch {}
-      console.error("Poppler execution error:", execError);
-      return NextResponse.json({ error: "PDF conversion failed. Make sure Poppler is installed." }, { status: 500 });
     }
+    
+    if (pages.length === 0) {
+      return NextResponse.json({ error: "Failed to extract any pages" }, { status: 400 });
+    }
+
+    return NextResponse.json({ pages }, { status: 200 });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Failed to convert PDF" }, { status: 500 });
+    console.error("PDF extraction error:", err);
+    return NextResponse.json({ error: "Failed to process PDF" }, { status: 500 });
   }
 }
-
-
