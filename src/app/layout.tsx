@@ -67,7 +67,7 @@ export default function RootLayout({
                   <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-150 absolute left-0 top-full mt-2 w-56 rounded-lg border border-black/[.08] bg-white shadow-md p-2">
                     <Link href="/convert/image-to-pdf" className="block rounded-md px-3 py-2 text-sm hover:bg-black/[.04]">Image to PDF</Link>
                     <Link href="/convert/image-converter" className="block rounded-md px-3 py-2 text-sm hover:bg-black/[.04]">JPG ⇄ PNG ⇄ WEBP ⇄ SVG</Link>
-                    <Link href="/convert#pdf-to-images" className="block rounded-md px-3 py-2 text-sm hover:bg-black/[.04]">PDF to Images</Link>
+                    <Link href="/convert/pdf-to-images" className="block rounded-md px-3 py-2 text-sm hover:bg-black/[.04]">PDF to Images</Link>
                   </div>
                 </div>
                 <div className="relative group">

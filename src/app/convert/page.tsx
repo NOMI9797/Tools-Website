@@ -10,7 +10,7 @@ export default function ConvertPage() {
   const tools = [
     { id: "image-to-pdf", title: "Image to PDF", desc: "Turn images into a single PDF.", icon: "🖼️", href: "/convert/image-to-pdf" },
     { id: "image-converter", title: "JPG ⇄ PNG ⇄ WEBP ⇄ SVG", desc: "Convert images between formats.", icon: "🧩", href: "/convert/image-converter" },
-    { id: "pdf-to-images", title: "PDF to Images", desc: "Split PDF into images.", icon: "📑", href: "/convert#pdf-to-images" },
+    { id: "pdf-to-images", title: "PDF to Images", desc: "Split PDF into images.", icon: "📑", href: "/convert/pdf-to-images" },
     { id: "docx-pdf", title: "DOCX ⇄ PDF", desc: "Convert Word docs to and from PDF.", icon: "📄", href: "/convert#docx-pdf" },
     { id: "pdf-excel", title: "PDF ⇄ Excel", desc: "Turn tables between PDF and Excel.", icon: "📊", href: "/convert#pdf-excel" },
     { id: "video-audio", title: "MP4 ⇄ MP3 ⇄ MOV ⇄ OGG", desc: "Convert video and audio formats.", icon: "🎧", href: "/convert#video-audio" },
