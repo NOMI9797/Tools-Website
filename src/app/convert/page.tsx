@@ -63,8 +63,8 @@ export default function ConvertPage() {
       tools: [
         { id: "pdf-to-images", title: "PDF to Images", desc: "Convert PDF pages to images", icon: "📑", href: "/convert/pdf-to-images", implemented: true },
         { id: "image-to-pdf", title: "Image to PDF", desc: "Convert images to PDF format", icon: "🖼️", href: "/convert/image-to-pdf", implemented: true },
-        { id: "heic-pdf", title: "HEIC to PDF", desc: "Convert HEIC images to PDF format", icon: "📱", href: "/convert/heic-pdf", implemented: false },
-        { id: "jpg-pdf", title: "JPG to PDF", desc: "Convert JPG images to PDF format", icon: "🖼️", href: "/convert/jpg-pdf", implemented: false },
+        { id: "heic-pdf", title: "HEIC to PDF", desc: "Convert HEIC images to PDF format", icon: "📱", href: "/convert/heic-pdf", implemented: true },
+        { id: "jpg-pdf", title: "JPG to PDF", desc: "Convert JPG images to PDF format", icon: "🖼️", href: "/convert/jpg-pdf", implemented: true },
       ],
     },
     {
@@ -73,7 +73,7 @@ export default function ConvertPage() {
       desc: "Convert to and from GIF format",
       icon: "🎞️",
       tools: [
-        { id: "video-gif", title: "Video to GIF", desc: "Convert videos to animated GIFs", icon: "🎥", href: "/convert/video-gif", implemented: false },
+        { id: "video-gif", title: "Video to GIF", desc: "Convert videos to animated GIFs", icon: "🎥", href: "/convert/video-gif", implemented: true },
         { id: "mp4-gif", title: "MP4 to GIF", desc: "Convert MP4 videos to GIF format", icon: "🎬", href: "/convert/mp4-gif", implemented: false },
         { id: "webm-gif", title: "WEBM to GIF", desc: "Convert WEBM videos to GIF format", icon: "🎦", href: "/convert/webm-gif", implemented: false },
         { id: "gif-mp4", title: "GIF to MP4", desc: "Convert GIFs to MP4 video format", icon: "📹", href: "/convert/gif-mp4", implemented: false },
