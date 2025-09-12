@@ -53,7 +53,7 @@ export default function CompressPage() {
       desc: "Compress PDFs by optimizing embedded images",
       icon: "📄",
       tools: [
-        { id: "pdf-compressor", title: "PDF Compressor", desc: "Basic PDF size reduction (images downscale)", icon: "📑", href: "/compress/pdf-compressor", implemented: false },
+        { id: "pdf-compressor", title: "PDF Compressor", desc: "Basic PDF size reduction (images downscale)", icon: "📑", href: "/compress/pdf-compressor", implemented: true },
       ],
     },
     {
@@ -62,7 +62,7 @@ export default function CompressPage() {
       desc: "Compress GIFs by reducing colors, fps, and dimensions",
       icon: "🎞️",
       tools: [
-        { id: "gif-compressor", title: "GIF Compressor", desc: "Re-encode GIF with fewer colors/fps/scale", icon: "🎥", href: "/compress/gif-compressor", implemented: false },
+        { id: "gif-compressor", title: "GIF Compressor", desc: "Re-encode GIF with fewer colors/fps/scale", icon: "🎥", href: "/compress/gif-compressor", implemented: true },
       ],
     },
   ];
