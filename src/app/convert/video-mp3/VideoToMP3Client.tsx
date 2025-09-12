@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { FFmpeg } from "@ffmpeg/ffmpeg";
-import { fetchFile } from "@ffmpeg/util";
+import { fetchFile, toBlobURL } from "@ffmpeg/util";
+import type { FFmpeg } from "@ffmpeg/ffmpeg";
 
 export default function VideoToMP3Client() {
   const [ffmpeg, setFfmpeg] = useState<FFmpeg | null>(null);
@@ -16,21 +16,20 @@ export default function VideoToMP3Client() {
   useEffect(() => {
     const init = async () => {
       if (typeof window === "undefined") return; // ⛔ prevent SSR
-      const instance = new FFmpeg();
-
-      instance.on("log", ({ message }) => console.log(message));
-      instance.on("progress", ({ progress }) =>
-        setProgress(Math.round(progress * 100))
-      );
-
+      
       try {
+        const { FFmpeg } = await import('@ffmpeg/ffmpeg');
+        const instance = new FFmpeg();
+
+        instance.on("log", ({ message }) => console.log(message));
+        instance.on("progress", ({ progress }) =>
+          setProgress(Math.round(progress * 100))
+        );
+
+        const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
         await instance.load({
-          coreURL:
-            "https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js",
-          wasmURL:
-            "https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.wasm",
-          workerURL:
-            "https://unpkg.com/@ffmpeg/core@0.12.6/dist/worker.js",
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         });
 
         setFfmpeg(instance);
@@ -62,32 +61,42 @@ export default function VideoToMP3Client() {
     setProgress(0);
 
     try {
-      const inputName = "input." + video.name.split(".").pop();
+      // Use simple, consistent file names
+      const inputName = "input.mp4";
       const outputName = "output.mp3";
 
+      // Write input file to FFmpeg filesystem
       await ffmpeg.writeFile(inputName, await fetchFile(video));
 
+      // Execute FFmpeg command
       await ffmpeg.exec([
-        "-i",
-        inputName,
-        "-vn",
-        "-ar",
-        "44100",
-        "-ac",
-        "2",
-        "-b:a",
-        "192k",
-        outputName,
+        "-i", inputName,
+        "-vn",                    // No video
+        "-c:a", "libmp3lame",     // Audio codec
+        "-ar", "44100",           // Sample rate
+        "-ac", "2",               // Stereo
+        "-b:a", "192k",           // Bitrate
+        "-y",                     // Overwrite output
+        outputName
       ]);
 
-      const output = (await ffmpeg.readFile(outputName)) as Uint8Array;
-      const buffer = new Uint8Array(output).buffer;
-      const url = URL.createObjectURL(new Blob([buffer], { type: "audio/mpeg" }));
+      // Read output file
+      const data = await ffmpeg.readFile(outputName);
+      const blob = new Blob([data], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
 
       setMp3(url);
+
+      // Cleanup temporary files
+      try {
+        await ffmpeg.deleteFile(inputName);
+        await ffmpeg.deleteFile(outputName);
+      } catch (cleanupError) {
+        console.warn("Failed to cleanup temporary files:", cleanupError);
+      }
     } catch (err) {
       console.error("Conversion failed:", err);
-      alert("Failed to convert video. Try again.");
+      alert("Failed to convert video. Please try again with a different file.");
     } finally {
       setIsLoading(false);
       setProgress(0);

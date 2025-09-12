@@ -31,9 +31,9 @@ export default function CompressPage() {
       desc: "Compress videos and audio files with adjustable quality",
       icon: "🎵",
       tools: [
-        { id: "video-compressor", title: "Video Compressor", desc: "Reduce video bitrate, resolution, and size (client-side)", icon: "📹", href: "/compress/video-compressor", implemented: false },
-        { id: "mp3-compressor", title: "MP3 Compressor", desc: "Lower MP3 bitrate to shrink file size (client-side)", icon: "🎧", href: "/compress/mp3-compressor", implemented: false },
-        { id: "wav-compressor", title: "WAV Compressor", desc: "Downsample WAV or convert to MP3 for smaller size", icon: "🎼", href: "/compress/wav-compressor", implemented: false },
+        { id: "video-compressor", title: "Video Compressor", desc: "Reduce video bitrate, resolution, and size (client-side)", icon: "📹", href: "/compress/video-compressor", implemented: true },
+        { id: "mp3-compressor", title: "MP3 Compressor", desc: "Lower MP3 bitrate to shrink file size (client-side)", icon: "🎧", href: "/compress/mp3-compressor", implemented: true },
+        { id: "wav-compressor", title: "WAV Compressor", desc: "Downsample WAV or convert to MP3 for smaller size", icon: "🎼", href: "/compress/wav-compressor", implemented: true },
       ],
     },
     {
