@@ -186,9 +186,9 @@ export default function ImageCompressorClient() {
             <button
               onClick={handleCompress}
               disabled={!file || isProcessing}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-black text-white py-3 px-4 rounded-lg hover:opacity-90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
-              {isProcessing ? "Compressing..." : "Compress Image"}
+              {isProcessing ? "Compressing…" : "Compress"}
             </button>
           </div>
         </div>

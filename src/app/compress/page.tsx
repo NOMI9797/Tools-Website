@@ -43,8 +43,8 @@ export default function CompressPage() {
       icon: "🖼️",
       tools: [
         { id: "image-compressor", title: "Image Compressor", desc: "Compress JPG/PNG/WEBP in the browser", icon: "🎨", href: "/compress/image-compressor", implemented: true },
-        { id: "jpeg-compressor", title: "JPEG Compressor", desc: "Adjust JPEG quality to reduce size", icon: "📸", href: "/compress/jpeg-compressor", implemented: false },
-        { id: "png-compressor", title: "PNG Compressor", desc: "Lossy/lossless PNG compression (wasm)", icon: "🧩", href: "/compress/png-compressor", implemented: false },
+        { id: "jpeg-compressor", title: "JPEG Compressor", desc: "Adjust JPEG quality to reduce size", icon: "📸", href: "/compress/jpeg-compressor", implemented: true },
+        { id: "png-compressor", title: "PNG Compressor", desc: "Lossy/lossless PNG compression (wasm)", icon: "🧩", href: "/compress/png-compressor", implemented: true },
       ],
     },
     {
