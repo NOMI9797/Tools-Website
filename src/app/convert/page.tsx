@@ -88,6 +88,7 @@ export default function ConvertPage() {
       tools: [
         { id: "unit-converter", title: "Unit Converter", desc: "Convert between various units", icon: "📐", href: "/convert/unit-converter", implemented: true },
         { id: "time-converter", title: "Time Converter", desc: "Convert between time formats", icon: "⏰", href: "/convert/time-converter", implemented: true },
+        { id: "age-calculator", title: "Age Calculator", desc: "Calculate your age in different units", icon: "🎂", href: "/convert/age-calculator", implemented: true },
       ],
     },
   ];
