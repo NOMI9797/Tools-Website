@@ -36,8 +36,8 @@ export default function ConvertPage() {
         { id: "mp4-mp3", title: "MP4 to MP3", desc: "Extract audio from video files", icon: "🎞️", href: "/convert/mp4-mp3", implemented: true },
         { id: "video-mp3", title: "Video to MP3", desc: "Convert any video to MP3 audio", icon: "🎥", href: "/convert/video-mp3", implemented: true },
         { id: "mp4-converter", title: "MP4 Converter", desc: "Convert between MP4, WEBM formats", icon: "📹", href: "/convert/mp4-converter", implemented: true },
-        { id: "mov-mp4", title: "MOV to MP4", desc: "Convert MOV videos to MP4 format", icon: "🎬", href: "/convert/mov-mp4", implemented: false },
-        { id: "mp3-ogg", title: "MP3 to OGG", desc: "Convert MP3 files to OGG format", icon: "🔊", href: "/convert/mp3-ogg", implemented: false },
+        { id: "mov-mp4", title: "MOV to MP4", desc: "Convert MOV videos to MP4 format", icon: "🎬", href: "/convert/mov-mp4", implemented: true },
+        { id: "mp3-ogg", title: "MP3 to OGG", desc: "Convert MP3 files to OGG format", icon: "🔊", href: "/convert/mp3-ogg", implemented: true },
       ],
     },
     {
