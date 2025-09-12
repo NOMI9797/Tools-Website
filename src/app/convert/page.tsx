@@ -76,8 +76,8 @@ export default function ConvertPage() {
         { id: "video-gif", title: "Video to GIF", desc: "Convert videos to animated GIFs", icon: "🎥", href: "/convert/video-gif", implemented: true },
         { id: "mp4-gif", title: "MP4 to GIF", desc: "Convert MP4 videos to GIF format", icon: "🎬", href: "/convert/mp4-gif", implemented: true },
         { id: "webm-gif", title: "WEBM to GIF", desc: "Convert WEBM videos to GIF format", icon: "🎦", href: "/convert/webm-gif", implemented: true },
-        { id: "gif-mp4", title: "GIF to MP4", desc: "Convert GIFs to MP4 video format", icon: "📹", href: "/convert/gif-mp4", implemented: false },
-        { id: "image-gif", title: "Image to GIF", desc: "Create GIFs from image sequences", icon: "🖼️", href: "/convert/image-gif", implemented: false },
+        { id: "gif-mp4", title: "GIF to MP4", desc: "Convert GIFs to MP4 video format", icon: "📹", href: "/convert/gif-mp4", implemented: true },
+        { id: "image-gif", title: "Image to GIF", desc: "Create GIFs from image sequences", icon: "🖼️", href: "/convert/image-gif", implemented: true },
       ],
     },
     {
