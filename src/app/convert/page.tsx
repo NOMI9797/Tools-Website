@@ -86,8 +86,8 @@ export default function ConvertPage() {
       desc: "Convert between different units",
       icon: "📏",
       tools: [
-        { id: "unit-converter", title: "Unit Converter", desc: "Convert between various units", icon: "📐", href: "/convert/unit-converter", implemented: false },
-        { id: "time-converter", title: "Time Converter", desc: "Convert between time formats", icon: "⏰", href: "/convert/time-converter", implemented: false },
+        { id: "unit-converter", title: "Unit Converter", desc: "Convert between various units", icon: "📐", href: "/convert/unit-converter", implemented: true },
+        { id: "time-converter", title: "Time Converter", desc: "Convert between time formats", icon: "⏰", href: "/convert/time-converter", implemented: true },
       ],
     },
   ];
