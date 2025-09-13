@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc; /* subtle off-white for a cleaner look */
-  --foreground: #171717;
+  --background: #F5F5F5; /* Light Gray background */
+  --foreground: #2E2E2E; /* Dark Gray text */
+  --primary: #1A2B4C; /* Navy Blue */
+  --secondary: #00B4D8; /* Cyan/Teal */
+  --accent: #3CCF91; /* Bright Green */
 }
 
 @theme inline {
@@ -14,14 +17,26 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Force light appearance even in dark mode preferences */
-    --background: #f8fafc;
-    --foreground: #171717;
+    /* Keep light theme even in dark mode for better readability */
+    --background: #F5F5F5;
+    --foreground: #2E2E2E;
   }
 }
 
 body {
-  background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Background Patterns */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(0, 180, 216, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 180, 216, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(circle, rgba(0, 180, 216, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
 }
