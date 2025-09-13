@@ -130,6 +130,7 @@ export default function UnitConverterClient() {
   const [toUnit, setToUnit] = useState("ft");
   const [inputValue, setInputValue] = useState("");
   const [result, setResult] = useState("");
+  const [isConverting, setIsConverting] = useState(false);
 
   const currentCategory = unitCategories.find(cat => cat.id === selectedCategory);
 
@@ -143,6 +144,8 @@ export default function UnitConverterClient() {
 
     const value = parseFloat(inputValue);
     if (isNaN(value)) return;
+
+    setIsConverting(true);
 
     // Try API conversion first for validation, fallback to client-side
     try {
@@ -162,6 +165,7 @@ export default function UnitConverterClient() {
       if (response.ok) {
         const data = await response.json();
         setResult(data.convertedValue.toString());
+        setIsConverting(false);
         return;
       }
     } catch (error) {
@@ -181,6 +185,7 @@ export default function UnitConverterClient() {
     }
 
     setResult(convertedValue.toFixed(6).replace(/\.?0+$/, ""));
+    setIsConverting(false);
   }, [inputValue, fromUnit, toUnit, selectedCategory, currentCategory]);
 
   const convertTemperature = (value: number, from: string, to: string): number => {
@@ -222,6 +227,7 @@ export default function UnitConverterClient() {
     }
     setInputValue("");
     setResult("");
+    setIsConverting(false);
   };
 
   const swapUnits = () => {
@@ -229,32 +235,35 @@ export default function UnitConverterClient() {
     setToUnit(fromUnit);
     setInputValue(result);
     setResult("");
+    setIsConverting(false);
+  };
+
+  const handleReset = () => {
+    setInputValue("");
+    setResult("");
+    setIsConverting(false);
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="rounded-xl border border-black/[.06] bg-white p-6">
-        <h1 className="text-2xl font-semibold mb-2">Unit Converter</h1>
-        <p className="text-sm text-black/60">Convert between different units of measurement</p>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
+    <div className="bg-transparent">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Category Selection */}
-        <div className="lg:col-span-1">
-          <div className="rounded-xl border border-black/[.06] bg-white p-6">
-            <h2 className="text-lg font-medium mb-4">Categories</h2>
-            <div className="space-y-2">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Unit Categories</h3>
+          
+          <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+            <div className="space-y-3">
               {unitCategories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => handleCategoryChange(category.id)}
-                  className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedCategory === category.id
-                      ? "bg-black text-white"
-                      : "hover:bg-black/[.05] text-black/80"
+                      ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg"
+                      : "bg-gray-300/50 text-gray-900 hover:bg-gray-400/50 border border-gray-300/50"
                   }`}
                 >
-                  <span className="mr-2">{category.icon}</span>
+                  <span className="mr-3 text-lg">{category.icon}</span>
                   {category.name}
                 </button>
               ))}
@@ -264,30 +273,37 @@ export default function UnitConverterClient() {
 
         {/* Conversion Interface */}
         <div className="lg:col-span-2">
-          <div className="rounded-xl border border-black/[.06] bg-white p-6">
-            <h2 className="text-lg font-medium mb-4">
-              {currentCategory?.icon} {currentCategory?.name} Conversion
-            </h2>
-
-            <div className="space-y-4">
-              {/* Input */}
-              <div>
-                <label className="block text-sm font-medium text-black/90 mb-2">
-                  From
-                </label>
-                <div className="flex gap-3">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            {currentCategory?.icon} {currentCategory?.name} Conversion
+          </h3>
+          
+          <div className="space-y-6">
+            {/* Input Section */}
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+              <h4 className="font-semibold text-gray-900 mb-4">Convert From</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Value
+                  </label>
                   <input
                     type="number"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onInput={convertValue}
-                    placeholder="Enter value"
-                    className="flex-1 px-3 py-2 border border-black/[.15] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black/[.1] focus:border-black/[.3]"
+                    placeholder="Enter value to convert"
+                    className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 transition-all duration-200"
                   />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    From Unit
+                  </label>
                   <select
                     value={fromUnit}
                     onChange={(e) => setFromUnit(e.target.value)}
-                    className="px-3 py-2 border border-black/[.15] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black/[.1] focus:border-black/[.3]"
+                    className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 transition-all duration-200"
                   >
                     {currentCategory?.units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
@@ -297,37 +313,46 @@ export default function UnitConverterClient() {
                   </select>
                 </div>
               </div>
+            </div>
 
-              {/* Swap Button */}
-              <div className="flex justify-center">
-                <button
-                  onClick={swapUnits}
-                  className="p-2 rounded-full hover:bg-black/[.05] transition-colors"
-                  title="Swap units"
-                >
-                  <svg className="w-5 h-5 text-black/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                  </svg>
-                </button>
-              </div>
+            {/* Swap Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={swapUnits}
+                className="p-4 rounded-full bg-gray-200/50 border border-gray-300/50 hover:bg-gray-300/50 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5"
+                title="Swap units"
+              >
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              </button>
+            </div>
 
-              {/* Output */}
-              <div>
-                <label className="block text-sm font-medium text-black/90 mb-2">
-                  To
-                </label>
-                <div className="flex gap-3">
+            {/* Output Section */}
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+              <h4 className="font-semibold text-gray-900 mb-4">Convert To</h4>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Result
+                  </label>
                   <input
                     type="text"
                     value={result}
                     readOnly
                     placeholder="Result will appear here"
-                    className="flex-1 px-3 py-2 border border-black/[.15] rounded-md text-sm bg-black/[.02] text-black/80"
+                    className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none"
                   />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    To Unit
+                  </label>
                   <select
                     value={toUnit}
                     onChange={(e) => setToUnit(e.target.value)}
-                    className="px-3 py-2 border border-black/[.15] rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black/[.1] focus:border-black/[.3]"
+                    className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 transition-all duration-200"
                   >
                     {currentCategory?.units.map((unit) => (
                       <option key={unit.id} value={unit.id}>
@@ -337,42 +362,88 @@ export default function UnitConverterClient() {
                   </select>
                 </div>
               </div>
+            </div>
 
-              {/* Convert Button */}
+            {/* Action Buttons */}
+            <div className="flex space-x-4">
               <button
                 onClick={convertValue}
-                disabled={!inputValue}
-                className="w-full py-2 px-4 bg-black text-white rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-black/80 transition-colors"
+                disabled={!inputValue || isConverting}
+                className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
               >
-                Convert
+                {isConverting ? "Converting..." : "Convert"}
+              </button>
+              
+              <button
+                onClick={handleReset}
+                className="px-6 py-4 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50 font-semibold"
+              >
+                Reset
               </button>
             </div>
+
+            {/* Conversion Result */}
+            {result && (
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Conversion Result</h4>
+                <div className="bg-gray-300/50 rounded-lg p-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-900 mb-2">
+                      {result}
+                    </div>
+                    <div className="text-gray-700">
+                      {currentCategory?.units.find(u => u.id === toUnit)?.symbol}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-700">From:</span>
+                    <div className="font-medium text-gray-900">
+                      {inputValue} {currentCategory?.units.find(u => u.id === fromUnit)?.symbol}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">To:</span>
+                    <div className="font-medium text-gray-900">
+                      {result} {currentCategory?.units.find(u => u.id === toUnit)?.symbol}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
       {/* Quick Reference */}
-      <div className="rounded-xl border border-black/[.06] bg-white p-6">
-        <h2 className="text-lg font-medium mb-4">Quick Reference</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {unitCategories.map((category) => (
-            <div key={category.id} className="space-y-2">
-              <h3 className="font-medium text-sm flex items-center">
-                <span className="mr-1">{category.icon}</span>
-                {category.name}
-              </h3>
-              <div className="text-xs text-black/60 space-y-1">
-                {category.units.slice(0, 3).map((unit) => (
-                  <div key={unit.id}>
-                    {unit.symbol} - {unit.name}
-                  </div>
-                ))}
-                {category.units.length > 3 && (
-                  <div className="text-black/40">+{category.units.length - 3} more</div>
-                )}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Reference</h3>
+        <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {unitCategories.map((category) => (
+              <div key={category.id} className="space-y-3">
+                <h4 className="font-semibold text-gray-900 flex items-center">
+                  <span className="mr-2 text-lg">{category.icon}</span>
+                  {category.name}
+                </h4>
+                <div className="text-sm text-gray-700 space-y-1">
+                  {category.units.slice(0, 3).map((unit) => (
+                    <div key={unit.id} className="flex justify-between">
+                      <span>{unit.symbol}</span>
+                      <span className="text-gray-600">{unit.name}</span>
+                    </div>
+                  ))}
+                  {category.units.length > 3 && (
+                    <div className="text-gray-500 text-xs">
+                      +{category.units.length - 3} more units
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ export default function VideoToGifClient() {
   const [ready, setReady] = useState(false);
   const [video, setVideo] = useState<File | null>(null);
   const [gif, setGif] = useState<string | null>(null);
+  const [convertedFileName, setConvertedFileName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Loading FFmpeg...");
@@ -53,8 +54,16 @@ export default function VideoToGifClient() {
       alert("Please upload a valid video file.");
       return;
     }
+    
+    // Check file size (limit to 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      alert("File too large. Please select a video file smaller than 50MB.");
+      return;
+    }
+    
     setVideo(file);
     setGif(null);
+    setConvertedFileName("");
   };
 
   // Convert video -> gif (try server-side first, fallback to client-side)
@@ -79,6 +88,7 @@ export default function VideoToGifClient() {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         setGif(url);
+        setConvertedFileName(video.name.replace(/\.[^/.]+$/, ".gif"));
         setIsLoading(false);
         setProgress(0);
         return;
@@ -122,6 +132,7 @@ export default function VideoToGifClient() {
       const url = URL.createObjectURL(blob);
 
       setGif(url);
+      setConvertedFileName(video.name.replace(/\.[^/.]+$/, ".gif"));
       console.log('Client-side conversion successful');
     } catch (err) {
       console.error("Both server and client conversion failed:", err);
@@ -133,120 +144,260 @@ export default function VideoToGifClient() {
   }, [video, ready, ffmpeg]);
 
   // Download gif
-  const handleDownload = () => {
-    if (!gif || !video) return;
+  const handleDownload = useCallback(() => {
+    if (!gif || !convertedFileName) return;
     const link = document.createElement("a");
     link.href = gif;
-    link.download = video.name.replace(/\.[^/.]+$/, ".gif");
+    link.download = convertedFileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, [gif, convertedFileName]);
+
+  const handleReset = useCallback(() => {
+    setVideo(null);
+    setGif(null);
+    setConvertedFileName("");
+  }, []);
 
   if (!ready) {
     return (
-      <div className="rounded-xl border border-black/[.06] bg-white p-6">
-        <p className="text-sm text-black/60">{loadingMessage || "Loading FFmpeg… please wait"}</p>
+      <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+        <div className="text-6xl mb-4">⚙️</div>
+        <h4 className="text-lg font-semibold text-gray-900 mb-2">Loading FFmpeg</h4>
+        <p className="text-gray-700 mb-4">{loadingMessage || "Loading FFmpeg… please wait"}</p>
+        <div className="w-full bg-gray-300/50 rounded-full h-2">
+          <div className="bg-gray-600 h-2 rounded-full animate-pulse" style={{ width: "60%" }} />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_320px]">
-      <div className="rounded-xl border border-black/[.06] bg-white p-6 space-y-4">
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-black/90">Upload Video</p>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm text-black/70 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-black/[.05] file:text-black hover:file:bg-black/[.08] transition-colors"
-          />
-          <p className="text-xs text-black/50">
-            Supports MP4, MOV, AVI, and other video formats. Max 5 seconds output.
-          </p>
+    <div className="bg-transparent">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Upload Video File</h3>
+          
+          <div className="space-y-6">
+            {/* File Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Video File
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => {
+                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                    input?.click();
+                  }}
+                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
+                >
+                  <div className="text-4xl mb-2">🎬</div>
+                  <div className="text-gray-700">
+                    {video ? video.name : "Click to select video file"}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Supports: MP4, MOV, AVI, and other video formats (max 50MB)
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Convert Button */}
+            <button
+              onClick={handleConvert}
+              disabled={!video || isLoading}
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+            >
+              {isLoading ? "Converting…" : "Convert to GIF"}
+            </button>
+
+            {/* File Information */}
+            {video && (
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Selected Video File</h4>
+                <div className="flex items-center space-x-3 p-3 bg-gray-300/50 rounded-lg">
+                  <span className="text-2xl">🎬</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate">{video.name}</div>
+                    <div className="text-sm text-gray-700">
+                      {(video.size / (1024 * 1024)).toFixed(2)} MB • {video.type}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Progress Bar */}
+            {isLoading && (
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Converting Video</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-700">Processing...</span>
+                    <span className="text-sm font-medium text-gray-900">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-300/50 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-gray-600 to-gray-700 h-3 rounded-full transition-all duration-300" 
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Converting video to animated GIF with optimized settings...
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {video && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-black/70">Selected File</p>
-              <p className="text-xs text-black/50">
-                {(video.size / (1024 * 1024)).toFixed(1)} MB
-              </p>
-            </div>
-            <div className="p-3 rounded-lg bg-black/[.02] border border-black/[.05]">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-black/[.05] flex items-center justify-center">
-                  <svg className="w-5 h-5 text-black/40" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 6a2 2 0 012-2h6l2 2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
-                  </svg>
+        {/* Results Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
+          
+          {gif ? (
+            <div className="space-y-6">
+              {/* GIF Preview */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Generated GIF</h4>
+                <div className="rounded-lg overflow-hidden border border-gray-300/50">
+                  <img 
+                    src={gif} 
+                    alt="Converted GIF"
+                    className="w-full h-auto"
+                  />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-black/90 truncate">
-                    {video.name}
-                  </p>
-                  <p className="text-xs text-black/50">
-                    Video • {video.type}
+              </div>
+
+              {/* Download Section */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-4">Download GIF</h4>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-300/50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">🎞️</span>
+                      <div>
+                        <div className="font-medium text-gray-900">{convertedFileName}</div>
+                        <div className="text-sm text-gray-700">Format: GIF</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleDownload}
+                      className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
+                    >
+                      📥 Download GIF
+                    </button>
+                    <button
+                      onClick={handleReset}
+                      className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
+                    >
+                      🔄 Convert Another
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Conversion Details */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-700">Source Format:</span>
+                    <div className="font-medium text-gray-900">Video</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Output Format:</span>
+                    <div className="font-medium text-gray-900">GIF</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Frame Rate:</span>
+                    <div className="font-medium text-gray-900">10 FPS</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Quality:</span>
+                    <div className="font-medium text-gray-900">Optimized</div>
+                  </div>
+                </div>
+                <div className="mt-3 p-3 bg-gray-300/50 rounded-lg">
+                  <p className="text-xs text-gray-700">
+                    High-quality GIF created with optimized palette generation. 
+                    Uses server-side FFmpeg when available, falls back to client-side processing.
                   </p>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          ) : video ? (
+            <div className="space-y-6">
+              {/* Video Preview */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Video Preview</h4>
+                <div className="rounded-lg overflow-hidden border border-gray-300/50">
+                  <video 
+                    src={URL.createObjectURL(video)} 
+                    controls 
+                    className="w-full h-auto"
+                    preload="metadata"
+                  />
+                </div>
+              </div>
 
-        {isLoading && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-black/70">Converting...</p>
-              <p className="text-xs text-black/50">{progress}%</p>
-            </div>
-            <div className="w-full bg-black/[.08] rounded-full h-2">
-              <div 
-                className="bg-black h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        )}
+              {/* File Information */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-700">Format:</span>
+                    <div className="font-medium text-gray-900">Video</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Target Format:</span>
+                    <div className="font-medium text-gray-900">GIF</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">File Size:</span>
+                    <div className="font-medium text-gray-900">
+                      {(video.size / (1024 * 1024)).toFixed(2)} MB
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Type:</span>
+                    <div className="font-medium text-gray-900">{video.type}</div>
+                  </div>
+                </div>
+              </div>
 
-        {gif && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-black/70">Converted GIF</p>
-              <button
-                onClick={handleDownload}
-                className="text-xs px-2 py-1 rounded bg-black text-white hover:bg-black/80 transition-colors"
-              >
-                Download GIF
-              </button>
+              {/* Ready to Convert */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+                <div className="text-6xl mb-4">🎬</div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
+                <p className="text-gray-700">
+                  Your video is ready to be converted to an animated GIF.
+                </p>
+              </div>
             </div>
-            <div className="rounded-lg border border-black/[.08] overflow-hidden">
-              <img 
-                src={gif} 
-                alt="Converted GIF"
-                className="w-full"
-              />
+          ) : (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+              <div className="text-6xl mb-4">🎬</div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
+              <p className="text-gray-700">
+                Select a video file to start converting it to an animated GIF.
+              </p>
             </div>
-            <p className="text-xs text-black/50">
-              High-quality GIF created with 10 FPS and optimized palette generation. Uses server-side FFmpeg when available, falls back to client-side processing.
-            </p>
-          </div>
-        )}
-      </div>
-
-      <aside className="rounded-xl border border-black/[.06] bg-white p-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleConvert}
-            disabled={!video || isLoading}
-            className="h-10 px-5 rounded-md bg-black text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Converting…" : "Convert to GIF"}
-          </button>
-          <a href="/convert" className="h-10 px-5 rounded-md border border-black/[.08] text-sm hover:bg-black/[.03] inline-flex items-center">Back</a>
+          )}
         </div>
-      </aside>
+      </div>
     </div>
   );
 }
