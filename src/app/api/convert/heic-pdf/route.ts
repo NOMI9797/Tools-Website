@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import heicConvert from "heic-convert";
+import sharp from "sharp";
 import { PDFDocument } from "pdf-lib";
 
 export const runtime = "nodejs";
@@ -32,17 +33,41 @@ export async function POST(req: Request) {
 
     // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
+    let processedCount = 0;
 
     // Process each HEIC file
     for (const file of files) {
       try {
-        // Convert HEIC to JPEG
         const buffer = Buffer.from(await file.arrayBuffer());
-        const jpegBuffer = await heicConvert({
-          buffer: buffer,
-          format: 'JPEG',
-          quality: 1 // Maximum quality
-        });
+        
+        // Debug: Log file info
+        console.log('File name:', file.name);
+        console.log('File size:', file.size);
+        console.log('Buffer length:', buffer.length);
+        console.log('First 20 bytes (hex):', buffer.slice(0, 20).toString('hex'));
+
+        let jpegBuffer: Buffer;
+
+        // Try to convert HEIC to JPEG using heic-convert first
+        try {
+          jpegBuffer = await heicConvert({
+            buffer: buffer,
+            format: 'JPEG',
+            quality: 1 // Maximum quality
+          });
+        } catch (heicError) {
+          console.log('heic-convert failed, trying sharp as fallback:', heicError);
+          
+          // Fallback: Try using sharp if heic-convert fails
+          try {
+            jpegBuffer = await sharp(buffer)
+              .jpeg({ quality: 95 })
+              .toBuffer();
+          } catch (sharpError) {
+            console.log('Sharp also failed:', sharpError);
+            throw heicError; // Throw the original error
+          }
+        }
 
         // Embed the JPEG into the PDF
         const image = await pdfDoc.embedJpg(jpegBuffer);
@@ -72,10 +97,19 @@ export async function POST(req: Request) {
           width: width * scale,
           height: height * scale,
         });
+        
+        processedCount++;
       } catch (error) {
         console.error(`Error processing ${file.name}:`, error);
         // Continue with other files
       }
+    }
+
+    // Check if any images were successfully processed
+    if (processedCount === 0) {
+      return NextResponse.json({ 
+        error: "Failed to process any images. Please ensure all files are valid HEIC images or try with different files." 
+      }, { status: 400 });
     }
 
     // Save the PDF

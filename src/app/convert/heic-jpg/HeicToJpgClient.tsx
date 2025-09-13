@@ -15,7 +15,13 @@ export default function HeicToJpgClient() {
 
     // Validate file type
     if (!file.name.toLowerCase().endsWith('.heic')) {
-      alert('Please select a HEIC image');
+      alert('Please select a HEIC image file (.heic extension)');
+      return;
+    }
+
+    // Check file size (limit to 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File too large. Please select a file smaller than 10MB.');
       return;
     }
 
@@ -50,7 +56,11 @@ export default function HeicToJpgClient() {
       setConvertedFileName(file.name.replace(/\.heic$/i, '.jpg') || 'converted.jpg');
     } catch (error) {
       console.error('Conversion failed:', error);
-      alert('Failed to convert image. Please try again.');
+      if (error instanceof Error) {
+        alert(`Conversion failed: ${error.message}`);
+      } else {
+        alert('Failed to convert image. Please ensure the file is a valid HEIC image from an iPhone or compatible device.');
+      }
     } finally {
       setIsLoading(false);
     }
