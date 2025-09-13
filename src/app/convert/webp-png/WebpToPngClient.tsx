@@ -6,6 +6,7 @@ export default function WebpToPngClient() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [convertedImage, setConvertedImage] = useState<string | null>(null);
+  const [convertedFileName, setConvertedFileName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,6 +26,7 @@ export default function WebpToPngClient() {
     reader.readAsDataURL(file);
     // Reset converted image
     setConvertedImage(null);
+    setConvertedFileName("");
   }, []);
 
   const handleConvert = async () => {
@@ -47,6 +49,7 @@ export default function WebpToPngClient() {
 
       const data = await res.json();
       setConvertedImage(`data:image/png;base64,${data.base64}`);
+      setConvertedFileName(file.name.replace('.webp', '.png') || 'converted.png');
     } catch (error) {
       console.error('Conversion failed:', error);
       alert('Failed to convert image. Please try again.');
@@ -56,71 +59,219 @@ export default function WebpToPngClient() {
   };
 
   const handleDownload = useCallback(() => {
-    if (!convertedImage) return;
+    if (!convertedImage || !convertedFileName) return;
 
     const link = document.createElement('a');
     link.href = convertedImage;
-    link.download = file?.name.replace('.webp', '.png') || 'converted.png';
+    link.download = convertedFileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  }, [convertedImage, file]);
+  }, [convertedImage, convertedFileName]);
+
+  const handleReset = useCallback(() => {
+    setFile(null);
+    setPreview(null);
+    setConvertedImage(null);
+    setConvertedFileName("");
+  }, []);
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_320px]">
-      <div className="rounded-xl border border-black/[.06] bg-white p-6 space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Upload WEBP</label>
-          <input
-            type="file"
-            accept="image/webp"
-            onChange={handleFileChange}
-            className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-black/[.05] hover:file:bg-black/[.075] file:text-black/70"
-          />
-          {file && <div className="text-xs text-black/60 truncate">{file.name}</div>}
+    <div className="bg-transparent">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Convert WEBP to PNG</h3>
+          
+          <div className="space-y-6">
+            {/* File Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select WEBP File
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="image/webp"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => {
+                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                    input?.click();
+                  }}
+                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
+                >
+                  <div className="text-4xl mb-2">🖼️</div>
+                  <div className="text-gray-700">
+                    {file ? file.name : "Click to select WEBP file"}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Supports: WEBP format only
+                  </div>
+                </button>
+              </div>
+              
+              {file && (
+                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🖼️</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{file.name}</div>
+                      <div className="text-sm text-gray-700">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Convert Button */}
+            <button
+              onClick={handleConvert}
+              disabled={!file || isLoading}
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+            >
+              {isLoading ? "Converting…" : "Convert to PNG"}
+            </button>
+          </div>
         </div>
 
-        {preview && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-black/70">Original WEBP</p>
-            </div>
-            <div className="rounded-lg border border-black/[.08] overflow-hidden">
-              <img src={preview} alt="Preview" className="max-h-[300px] w-full object-contain bg-[url('/grid.svg')]" />
-            </div>
-          </div>
-        )}
+        {/* Results Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
+          
+          {convertedImage ? (
+            <div className="space-y-6">
+              {/* Converted Image Preview */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Converted PNG Preview</h4>
+                <div className="flex justify-center">
+                  <img
+                    src={convertedImage}
+                    alt="Converted Preview"
+                    className="max-w-full max-h-64 rounded-lg shadow-lg"
+                  />
+                </div>
+              </div>
 
-        {convertedImage && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-black/70">Converted PNG</p>
-              <button
-                onClick={handleDownload}
-                className="text-xs px-2 py-1 rounded bg-black text-white hover:bg-black/80 transition-colors"
-              >
-                Download
-              </button>
+              {/* Download Section */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-4">Download Converted PNG</h4>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-gray-300/50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">📁</span>
+                      <div>
+                        <div className="font-medium text-gray-900">{convertedFileName}</div>
+                        <div className="text-sm text-gray-700">Format: PNG</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleDownload}
+                      className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
+                    >
+                      📥 Download PNG
+                    </button>
+                    <button
+                      onClick={handleReset}
+                      className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
+                    >
+                      🔄 Convert Another
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* File Information */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-700">Original Format:</span>
+                    <div className="font-medium text-gray-900">WEBP</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Converted Format:</span>
+                    <div className="font-medium text-gray-900">PNG</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Original Size:</span>
+                    <div className="font-medium text-gray-900">{file ? (file.size / (1024 * 1024)).toFixed(2) : '0'} MB</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Quality:</span>
+                    <div className="font-medium text-gray-900">Lossless</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="rounded-lg border border-black/[.08] overflow-hidden">
-              <img src={convertedImage} alt="Converted" className="max-h-[300px] w-full object-contain bg-[url('/grid.svg')]" />
+          ) : file ? (
+            <div className="space-y-6">
+              {/* Original Image Preview */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Original WEBP Preview</h4>
+                <div className="flex justify-center">
+                  {preview ? (
+                    <img
+                      src={preview}
+                      alt="Original Preview"
+                      className="max-w-full max-h-64 rounded-lg shadow-lg"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-full h-32 bg-gray-300/50 rounded-lg">
+                      <span className="text-gray-500">No preview available</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* File Information */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-700">Format:</span>
+                    <div className="font-medium text-gray-900">WEBP</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Target Format:</span>
+                    <div className="font-medium text-gray-900">PNG</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">File Size:</span>
+                    <div className="font-medium text-gray-900">{file ? (file.size / (1024 * 1024)).toFixed(2) : '0'} MB</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Quality:</span>
+                    <div className="font-medium text-gray-900">Lossless</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Ready to Convert */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+                <div className="text-6xl mb-4">🖼️</div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
+                <p className="text-gray-700">
+                  Your WEBP image is ready to be converted to PNG format.
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+              <div className="text-6xl mb-4">🖼️</div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
+              <p className="text-gray-700">
+                Select a WEBP image file to start conversion to PNG format.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-
-      <aside className="rounded-xl border border-black/[.06] bg-white p-6">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleConvert}
-            disabled={!file || isLoading}
-            className="h-10 px-5 rounded-md bg-black text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? "Converting…" : "Convert to PNG"}
-          </button>
-          <a href="/convert" className="h-10 px-5 rounded-md border border-black/[.08] text-sm hover:bg-black/[.03] inline-flex items-center">Back</a>
-        </div>
-      </aside>
     </div>
   );
 }
