@@ -70,18 +70,18 @@ export default function CompressPage() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Compress</h1>
-        <p className="text-sm text-slate-300">Free compression utilities covering video, audio, images, and PDFs.</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Compress</h1>
+        <p className="text-sm text-gray-700">Free compression utilities covering video, audio, images, and PDFs.</p>
       </header>
 
       {categories.map((category) => (
         <section key={category.id} className="space-y-6">
           <div className="space-y-2">
-            <h2 className="text-xl font-medium tracking-tight flex items-center gap-2 text-white">
+            <h2 className="text-xl font-medium tracking-tight flex items-center gap-2 text-gray-900">
               <span>{category.icon}</span>
               {category.title}
             </h2>
-            <p className="text-sm text-slate-300">{category.desc}</p>
+            <p className="text-sm text-gray-700">{category.desc}</p>
           </div>
 
           <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -90,23 +90,23 @@ export default function CompressPage() {
                 key={tool.id}
                 id={tool.id}
                 href={tool.implemented ? tool.href : "#coming-soon"}
-                className={`group rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-5 sm:p-6 transition-all shadow-sm ${
-                  tool.implemented ? "hover:shadow-lg hover:border-emerald-400/30" : "opacity-50 cursor-not-allowed"
+                className={`group rounded-xl border border-gray-300/50 bg-gray-200/50 backdrop-blur-md p-5 sm:p-6 transition-all shadow-sm ${
+                  tool.implemented ? "hover:shadow-lg hover:border-gray-500/50" : "opacity-50 cursor-not-allowed"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div className="text-2xl">{tool.icon}</div>
                   <div className="space-y-1.5">
-                    <h3 className="font-medium tracking-tight group-hover:opacity-90 text-white">
+                    <h3 className="font-medium tracking-tight group-hover:opacity-90 text-gray-900">
                       {tool.title}
-                      {!tool.implemented && <span className="ml-2 text-xs text-slate-400">(Coming Soon)</span>}
+                      {!tool.implemented && <span className="ml-2 text-xs text-gray-600">(Coming Soon)</span>}
                     </h3>
-                    <p className="text-sm text-slate-300">{tool.desc}</p>
+                    <p className="text-sm text-gray-700">{tool.desc}</p>
                   </div>
                 </div>
                 {tool.implemented && (
                   <div className="mt-4">
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-gray-600">
                       Open
                       <span aria-hidden>→</span>
                     </span>

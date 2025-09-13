@@ -115,72 +115,123 @@ export default function VideoToMP3Client() {
 
   if (!ready) {
     return (
-      <div className="rounded-xl border border-black/[.06] bg-white p-6">
-        <p className="text-sm text-black/60">Loading FFmpeg… please wait</p>
+      <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+        <p className="text-sm text-gray-700">Loading FFmpeg… please wait</p>
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[1fr_320px]">
-      <div className="rounded-xl border border-black/[.06] bg-white p-6 space-y-4">
+    <div className="bg-transparent">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input Section */}
         <div>
-          <label className="text-sm font-medium">Upload Video</label>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={handleFileChange}
-            className="block w-full text-sm mt-2"
-          />
-          <p className="text-xs text-black/50">
-            Supports MP4, MOV, AVI. Converts to MP3 audio.
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Extract Audio from Video</h3>
+          
+          <div className="space-y-6">
+            {/* File Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Video File
+              </label>
+              <div className="relative">
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => {
+                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+                    input?.click();
+                  }}
+                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
+                >
+                  <div className="text-4xl mb-2">🎬</div>
+                  <div className="text-gray-700">
+                    {video ? video.name : "Click to select video file"}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Supports: MP4, MOV, AVI, MKV, WEBM, FLV, WMV, M4V, 3GP, OGV
+                  </div>
+                </button>
+              </div>
+              
+              {video && (
+                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🎬</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{video.name}</div>
+                      <div className="text-sm text-gray-700">{(video.size / (1024 * 1024)).toFixed(1)} MB</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Convert Button */}
+            <button
+              onClick={convertToMp3}
+              disabled={!video || isLoading}
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+            >
+              {isLoading ? "Converting…" : "Extract Audio to MP3"}
+            </button>
+
+            {/* Progress Bar */}
+            {isLoading && (
+              <div className="w-full bg-gray-300/50 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-gray-500 to-gray-700 h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            )}
+          </div>
         </div>
 
-        {video && (
-          <div className="p-3 rounded-lg bg-black/[.02] border border-black/[.05]">
-            <p className="text-sm font-medium">{video.name}</p>
-            <p className="text-xs text-black/50">
-              {(video.size / (1024 * 1024)).toFixed(1)} MB
-            </p>
-          </div>
-        )}
+        {/* Results Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Extraction Result</h3>
+          
+          {mp3 ? (
+            <div className="space-y-6">
+              {/* Success Message */}
+              <div className="bg-green-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2">
+                  <span className="text-green-600 text-xl">✅</span>
+                  <span className="text-green-700 font-medium">Audio Extraction Successful!</span>
+                </div>
+              </div>
 
-        {isLoading && (
-          <div>
-            <p className="text-sm">Converting… {progress}%</p>
-            <div className="w-full bg-black/[.08] rounded-full h-2 mt-1">
-              <div
-                className="bg-black h-2 rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
+              {/* Audio Player */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Preview Audio</h4>
+                <audio controls src={mp3} className="w-full" />
+              </div>
+
+              {/* Download Button */}
+              <button
+                onClick={handleDownload}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-green-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+              >
+                <span>📥</span>
+                <span>Download MP3</span>
+              </button>
             </div>
-          </div>
-        )}
-
-        {mp3 && (
-          <div>
-            <p className="text-sm mb-2">Converted MP3</p>
-            <audio controls src={mp3} className="w-full mb-2" />
-            <button
-              onClick={handleDownload}
-              className="mt-2 px-4 py-2 bg-black text-white text-sm rounded-md"
-            >
-              Download MP3
-            </button>
-          </div>
-        )}
+          ) : (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+              <div className="text-6xl mb-4">🎬</div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Extract Audio</h4>
+              <p className="text-gray-700">
+                Select a video file to extract audio and convert to MP3 format.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-
-      <aside className="rounded-xl border border-black/[.06] bg-white p-6">
-        <button
-          onClick={convertToMp3}
-          disabled={!video || isLoading}
-          className="h-10 px-5 rounded-md bg-black text-white text-sm font-medium disabled:opacity-50"
-        >
-          {isLoading ? "Converting…" : "Convert to MP3"}
-        </button>
-      </aside>
     </div>
   );
 }

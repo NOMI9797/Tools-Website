@@ -246,216 +246,287 @@ export default function MP3ToOggClient() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      {/* File Upload */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select MP3 File
-        </label>
-        <div className="flex items-center space-x-4">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/mpeg,.mp3"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Choose MP3 File
-          </button>
-          {file && (
-            <span className="text-sm text-gray-600">
-              {file.name} ({formatFileSize(file.size)})
-            </span>
-          )}
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Supports MP3 audio files (.mp3)
-        </p>
-      </div>
-
-      {/* Conversion Settings */}
-      {file && (
-        <div className="mb-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Conversion Settings</h3>
+    <div className="bg-transparent">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Convert MP3 to OGG</h3>
           
-          {/* Quality */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Quality
-            </label>
-            <select
-              value={settings.quality}
-              onChange={(e) => setSettings({...settings, quality: e.target.value as any})}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="high">High Quality</option>
-              <option value="medium">Medium Quality</option>
-              <option value="low">Low Quality</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {getQualityDescription(settings.quality)}
-            </p>
-          </div>
-
-          {/* Encoding Mode */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Encoding Mode
-            </label>
-            <select
-              value={settings.encodingMode}
-              onChange={(e) => setSettings({...settings, encodingMode: e.target.value as any})}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="vbr">VBR - Variable Bitrate</option>
-              <option value="cbr">CBR - Constant Bitrate</option>
-              <option value="abr">ABR - Average Bitrate</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {getEncodingModeDescription(settings.encodingMode)}
-            </p>
-          </div>
-
-          {/* Bitrate (for CBR and ABR) */}
-          {(settings.encodingMode === 'cbr' || settings.encodingMode === 'abr') && (
+          <div className="space-y-6">
+            {/* File Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bitrate
+                Select MP3 File
               </label>
-              <select
-                value={settings.bitrate}
-                onChange={(e) => setSettings({...settings, bitrate: e.target.value as any})}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <div className="relative">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/mpeg,.mp3"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
+                >
+                  <div className="text-4xl mb-2">🎵</div>
+                  <div className="text-gray-700">
+                    {file ? file.name : "Click to select MP3 file"}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    Supports: MP3 audio files (.mp3)
+                  </div>
+                </button>
+              </div>
+              
+              {file && (
+                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🎵</span>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">{file.name}</div>
+                      <div className="text-sm text-gray-700">{formatFileSize(file.size)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Conversion Settings */}
+            {file && (
+              <div className="space-y-4">
+                <h4 className="text-md font-semibold text-gray-900">Conversion Settings</h4>
+                
+                {/* Quality */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quality
+                  </label>
+                  <select
+                    value={settings.quality}
+                    onChange={(e) => setSettings({...settings, quality: e.target.value as any})}
+                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
+                  >
+                    <option value="high" className="bg-gray-200 text-gray-900">High Quality</option>
+                    <option value="medium" className="bg-gray-200 text-gray-900">Medium Quality</option>
+                    <option value="low" className="bg-gray-200 text-gray-900">Low Quality</option>
+                  </select>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {getQualityDescription(settings.quality)}
+                  </p>
+                </div>
+
+                {/* Encoding Mode */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Encoding Mode
+                  </label>
+                  <select
+                    value={settings.encodingMode}
+                    onChange={(e) => setSettings({...settings, encodingMode: e.target.value as any})}
+                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
+                  >
+                    <option value="vbr" className="bg-gray-200 text-gray-900">VBR - Variable Bitrate</option>
+                    <option value="cbr" className="bg-gray-200 text-gray-900">CBR - Constant Bitrate</option>
+                    <option value="abr" className="bg-gray-200 text-gray-900">ABR - Average Bitrate</option>
+                  </select>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {getEncodingModeDescription(settings.encodingMode)}
+                  </p>
+                </div>
+
+                {/* Bitrate (for CBR and ABR) */}
+                {(settings.encodingMode === 'cbr' || settings.encodingMode === 'abr') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bitrate
+                    </label>
+                    <select
+                      value={settings.bitrate}
+                      onChange={(e) => setSettings({...settings, bitrate: e.target.value as any})}
+                      className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
+                    >
+                      <option value="320" className="bg-gray-200 text-gray-900">320 kbps</option>
+                      <option value="256" className="bg-gray-200 text-gray-900">256 kbps</option>
+                      <option value="192" className="bg-gray-200 text-gray-900">192 kbps</option>
+                      <option value="128" className="bg-gray-200 text-gray-900">128 kbps</option>
+                      <option value="96" className="bg-gray-200 text-gray-900">96 kbps</option>
+                      <option value="64" className="bg-gray-200 text-gray-900">64 kbps</option>
+                    </select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {getBitrateDescription(settings.bitrate)}
+                    </p>
+                  </div>
+                )}
+
+                {/* Sample Rate */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Sample Rate
+                  </label>
+                  <select
+                    value={settings.sampleRate}
+                    onChange={(e) => setSettings({...settings, sampleRate: e.target.value as any})}
+                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
+                  >
+                    <option value="original" className="bg-gray-200 text-gray-900">Original Sample Rate</option>
+                    <option value="48000" className="bg-gray-200 text-gray-900">48 kHz</option>
+                    <option value="44100" className="bg-gray-200 text-gray-900">44.1 kHz</option>
+                    <option value="22050" className="bg-gray-200 text-gray-900">22.05 kHz</option>
+                    <option value="11025" className="bg-gray-200 text-gray-900">11.025 kHz</option>
+                  </select>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {getSampleRateDescription(settings.sampleRate)}
+                  </p>
+                </div>
+
+                {/* Channels */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Channels
+                  </label>
+                  <select
+                    value={settings.channels}
+                    onChange={(e) => setSettings({...settings, channels: e.target.value as any})}
+                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
+                  >
+                    <option value="original" className="bg-gray-200 text-gray-900">Original Channels</option>
+                    <option value="stereo" className="bg-gray-200 text-gray-900">Stereo (2 channels)</option>
+                    <option value="mono" className="bg-gray-200 text-gray-900">Mono (1 channel)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Convert Button */}
+            {file && (
+              <button
+                onClick={handleConvert}
+                disabled={isLoading || !ffmpegLoaded}
+                className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
               >
-                <option value="320">320 kbps</option>
-                <option value="256">256 kbps</option>
-                <option value="192">192 kbps</option>
-                <option value="128">128 kbps</option>
-                <option value="96">96 kbps</option>
-                <option value="64">64 kbps</option>
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                {getBitrateDescription(settings.bitrate)}
+                {isLoading ? `Converting... ${progress}%` : 'Convert MP3 to OGG'}
+              </button>
+            )}
+
+            {/* Progress Bar */}
+            {isLoading && (
+              <div className="w-full bg-gray-300/50 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-gray-500 to-gray-700 h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            )}
+
+            {/* Error Display */}
+            {error && (
+              <div className="bg-red-100 border border-red-300 rounded-xl p-4 backdrop-blur-sm">
+                <p className="text-red-600 text-sm">{error}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Results Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
+          
+          {convertedFile ? (
+            <div className="space-y-6">
+              {/* Success Message */}
+              <div className="bg-green-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
+                <div className="flex items-center space-x-2">
+                  <span className="text-green-600 text-xl">✅</span>
+                  <span className="text-green-700 font-medium">MP3 to OGG Conversion Successful!</span>
+                </div>
+              </div>
+
+              {/* File Information */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-700">Original Size:</span>
+                    <div className="font-medium text-gray-900">{formatFileSize(file?.size || 0)}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Converted Size:</span>
+                    <div className="font-medium text-gray-900">{formatFileSize(convertedFile.size)}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Size Change:</span>
+                    <div className={`font-medium ${convertedFile.size < (file?.size || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                      {((convertedFile.size - (file?.size || 0)) / (file?.size || 1) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Format:</span>
+                    <div className="font-medium text-gray-900">OGG</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Settings Used */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                <h4 className="font-semibold text-gray-900 mb-3">Settings Used</h4>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <span className="text-gray-700">Quality:</span>
+                    <div className="font-medium text-gray-900 capitalize">{settings.quality}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Encoding Mode:</span>
+                    <div className="font-medium text-gray-900">{settings.encodingMode.toUpperCase()}</div>
+                  </div>
+                  {(settings.encodingMode === 'cbr' || settings.encodingMode === 'abr') && (
+                    <div>
+                      <span className="text-gray-700">Bitrate:</span>
+                      <div className="font-medium text-gray-900">{settings.bitrate} kbps</div>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-gray-700">Sample Rate:</span>
+                    <div className="font-medium text-gray-900">
+                      {settings.sampleRate === 'original' ? 'Original' : `${settings.sampleRate} Hz`}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-700">Channels:</span>
+                    <div className="font-medium text-gray-900 capitalize">
+                      {settings.channels === 'original' ? 'Original' : settings.channels}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Download Button */}
+              <button
+                onClick={handleDownload}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-green-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+              >
+                <span>📥</span>
+                <span>Download OGG</span>
+              </button>
+            </div>
+          ) : (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+              <div className="text-6xl mb-4">🎵</div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
+              <p className="text-gray-700">
+                Select an MP3 file and configure your settings to convert to OGG format.
               </p>
             </div>
           )}
-
-          {/* Sample Rate */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Sample Rate
-            </label>
-            <select
-              value={settings.sampleRate}
-              onChange={(e) => setSettings({...settings, sampleRate: e.target.value as any})}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="original">Original Sample Rate</option>
-              <option value="48000">48 kHz</option>
-              <option value="44100">44.1 kHz</option>
-              <option value="22050">22.05 kHz</option>
-              <option value="11025">11.025 kHz</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {getSampleRateDescription(settings.sampleRate)}
-            </p>
-          </div>
-
-          {/* Channels */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Channels
-            </label>
-            <select
-              value={settings.channels}
-              onChange={(e) => setSettings({...settings, channels: e.target.value as any})}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="original">Original Channels</option>
-              <option value="stereo">Stereo (2 channels)</option>
-              <option value="mono">Mono (1 channel)</option>
-            </select>
-          </div>
         </div>
-      )}
-
-      {/* Convert Button */}
-      {file && (
-        <div className="mb-6">
-          <button
-            onClick={handleConvert}
-            disabled={isLoading || !ffmpegLoaded}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? `Converting... ${progress}%` : 'Convert MP3 to OGG'}
-          </button>
-        </div>
-      )}
-
-      {/* Progress */}
-      {isLoading && (
-        <div className="mb-6">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600">{error}</p>
-        </div>
-      )}
-
-      {/* Results */}
-      {convertedFile && (
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Conversion Results</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-white p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Original MP3</h4>
-              <p className="text-sm text-gray-600">Size: {formatFileSize(file?.size || 0)}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Converted OGG</h4>
-              <p className="text-sm text-gray-600">Size: {formatFileSize(convertedFile.size)}</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg mb-4">
-            <h4 className="font-medium text-gray-900 mb-2">Settings Used</h4>
-            <p className="text-sm text-gray-600">
-              Quality: {settings.quality}<br />
-              Encoding Mode: {settings.encodingMode.toUpperCase()}<br />
-              {(settings.encodingMode === 'cbr' || settings.encodingMode === 'abr') && `Bitrate: ${settings.bitrate} kbps<br />`}
-              Sample Rate: {settings.sampleRate === 'original' ? 'Original' : `${settings.sampleRate} Hz`}<br />
-              Channels: {settings.channels === 'original' ? 'Original' : settings.channels}
-            </p>
-          </div>
-
-          <button
-            onClick={handleDownload}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Download OGG
-          </button>
-        </div>
-      )}
+      </div>
 
       {/* Loading Status */}
       {!ffmpegLoaded && (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading audio converter...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
+          <p className="text-gray-700">Loading audio converter...</p>
         </div>
       )}
     </div>

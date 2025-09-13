@@ -187,7 +187,7 @@ export default function AudioConverterClient() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-transparent">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
         <div>
@@ -209,25 +209,25 @@ export default function AudioConverterClient() {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-center"
+                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
                 >
                   <div className="text-4xl mb-2">🎵</div>
-                  <div className="text-gray-600">
+                  <div className="text-gray-700">
                     {selectedFile ? selectedFile.name : "Click to select audio file"}
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-gray-600 mt-1">
                     Supports: MP3, WAV, OGG, FLAC, AAC, M4A, WMA
                   </div>
                 </button>
               </div>
               
               {selectedFile && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{getFileIcon(selectedFile.name.split('.').pop() || '')}</span>
                     <div className="flex-1">
                       <div className="font-medium text-gray-900">{selectedFile.name}</div>
-                      <div className="text-sm text-gray-600">{formatFileSize(selectedFile.size)}</div>
+                      <div className="text-sm text-gray-700">{formatFileSize(selectedFile.size)}</div>
                     </div>
                   </div>
                 </div>
@@ -242,10 +242,10 @@ export default function AudioConverterClient() {
               <select
                 value={targetFormat}
                 onChange={(e) => setTargetFormat(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-blue-400 focus:border-transparent backdrop-blur-sm"
               >
                 {supportedFormats.map((format) => (
-                  <option key={format.id} value={format.id}>
+                  <option key={format.id} value={format.id} className="bg-slate-800 text-gray-900">
                     {format.name} - {format.description}
                   </option>
                 ))}
@@ -259,18 +259,18 @@ export default function AudioConverterClient() {
               </label>
               <div className="space-y-2">
                 {qualityOptions.map((option) => (
-                  <label key={option.id} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <label key={option.id} className="flex items-center space-x-3 p-4 border border-white/10 bg-gray-200/50 rounded-xl hover:bg-gray-300/50 cursor-pointer transition-all duration-200 backdrop-blur-sm">
                     <input
                       type="radio"
                       name="quality"
                       value={option.id}
                       checked={quality === option.id}
                       onChange={(e) => setQuality(e.target.value)}
-                      className="text-blue-600 focus:ring-blue-500"
+                      className="text-gray-600 focus:ring-gray-600"
                     />
                     <div>
                       <div className="font-medium text-gray-900">{option.name}</div>
-                      <div className="text-sm text-gray-600">{option.description}</div>
+                      <div className="text-sm text-gray-700">{option.description}</div>
                     </div>
                   </label>
                 ))}
@@ -281,16 +281,16 @@ export default function AudioConverterClient() {
             <button
               onClick={handleConvert}
               disabled={!selectedFile || isConverting}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-gray-900 py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-blue-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
             >
               {isConverting ? "Converting..." : "Convert Audio"}
             </button>
 
             {/* Progress Bar */}
             {isConverting && (
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-300/50 rounded-full h-3">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-gray-500 to-gray-700 h-3 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
@@ -298,7 +298,7 @@ export default function AudioConverterClient() {
 
             {/* Error Display */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="bg-red-100 border border-red-300 rounded-xl p-4 backdrop-blur-sm">
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
@@ -312,39 +312,39 @@ export default function AudioConverterClient() {
           {conversionResult ? (
             <div className="space-y-6">
               {/* Success Message */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-green-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2">
                   <span className="text-green-600 text-xl">✅</span>
-                  <span className="text-green-800 font-medium">Conversion Successful!</span>
+                  <span className="text-green-700 font-medium">Conversion Successful!</span>
                 </div>
               </div>
 
               {/* File Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
                 <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Original Format:</span>
-                    <span className="font-medium">{conversionResult.originalFormat}</span>
+                    <span className="text-gray-700">Original Format:</span>
+                    <span className="font-medium text-gray-900">{conversionResult.originalFormat}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Target Format:</span>
-                    <span className="font-medium">{conversionResult.targetFormat}</span>
+                    <span className="text-gray-700">Target Format:</span>
+                    <span className="font-medium text-gray-900">{conversionResult.targetFormat}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Quality:</span>
-                    <span className="font-medium capitalize">{conversionResult.quality}</span>
+                    <span className="text-gray-700">Quality:</span>
+                    <span className="font-medium text-gray-900 capitalize">{conversionResult.quality}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Original Size:</span>
-                    <span className="font-medium">{formatFileSize(conversionResult.originalSize)}</span>
+                    <span className="text-gray-700">Original Size:</span>
+                    <span className="font-medium text-gray-900">{formatFileSize(conversionResult.originalSize)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Converted Size:</span>
-                    <span className="font-medium">{formatFileSize(conversionResult.convertedSize)}</span>
+                    <span className="text-gray-700">Converted Size:</span>
+                    <span className="font-medium text-gray-900">{formatFileSize(conversionResult.convertedSize)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Size Change:</span>
+                    <span className="text-gray-700">Size Change:</span>
                     <span className={`font-medium ${
                       conversionResult.convertedSize < conversionResult.originalSize 
                         ? 'text-green-600' 
@@ -360,17 +360,17 @@ export default function AudioConverterClient() {
               {/* Download Button */}
               <button
                 onClick={handleDownload}
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-gray-900 py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-emerald-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
               >
                 <span>📥</span>
                 <span>Download {conversionResult.fileName}</span>
               </button>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
               <div className="text-6xl mb-4">🎵</div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-600">
+              <p className="text-gray-700">
                 Select an audio file and choose your target format to get started.
               </p>
             </div>
@@ -379,16 +379,16 @@ export default function AudioConverterClient() {
       </div>
 
       {/* Supported Formats Info */}
-      <div className="mt-8 bg-blue-50 rounded-lg p-6 border border-blue-200">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4">Supported Audio Formats</h3>
+      <div className="mt-8 bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+        <h3 className="text-lg font-semibold text-gray-600 mb-4">Supported Audio Formats</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {supportedFormats.map((format) => (
-            <div key={format.id} className="bg-white p-3 rounded-lg">
+            <div key={format.id} className="bg-gray-200/50 border border-gray-300/50 p-4 rounded-xl backdrop-blur-sm hover:bg-gray-300/50 transition-all duration-200">
               <div className="flex items-center space-x-2 mb-1">
                 <span className="text-lg">{getFileIcon(format.extension)}</span>
                 <span className="font-semibold text-gray-900">{format.name}</span>
               </div>
-              <p className="text-sm text-gray-600">{format.description}</p>
+              <p className="text-sm text-gray-700">{format.description}</p>
             </div>
           ))}
         </div>

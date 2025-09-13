@@ -328,7 +328,7 @@ export default function MP4ToMP3Client() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-transparent">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Section */}
         <div>
@@ -337,7 +337,7 @@ export default function MP4ToMP3Client() {
           <div className="space-y-6">
             {/* File Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-2">
                 Select Video File
               </label>
               <div className="relative">
@@ -350,25 +350,25 @@ export default function MP4ToMP3Client() {
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-center"
+                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
                 >
                   <div className="text-4xl mb-2">🎬</div>
-                  <div className="text-gray-600">
+                  <div className="text-gray-700">
                     {selectedFile ? selectedFile.name : "Click to select video file"}
                   </div>
-                  <div className="text-sm text-gray-500 mt-1">
+                  <div className="text-sm text-gray-700 mt-1">
                     Supports: MP4, MOV, AVI, MKV, WEBM, FLV, WMV, M4V, 3GP, OGV
                   </div>
                 </button>
               </div>
               
               {selectedFile && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{getFileIcon(selectedFile.name.split('.').pop() || '')}</span>
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">{selectedFile.name}</div>
-                      <div className="text-sm text-gray-600">{formatFileSize(selectedFile.size)}</div>
+                      <div className="font-medium text-gray-900 text-gray-900">{selectedFile.name}</div>
+                      <div className="text-sm text-gray-700">{formatFileSize(selectedFile.size)}</div>
                     </div>
                   </div>
                 </div>
@@ -377,16 +377,16 @@ export default function MP4ToMP3Client() {
 
             {/* Quality Settings */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-2">
                 MP3 Quality
               </label>
               <select
                 value={quality}
                 onChange={(e) => setQuality(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
               >
                 {mp3Qualities.map((q) => (
-                  <option key={q.id} value={q.id}>
+                  <option key={q.id} value={q.id} className="bg-gray-200 text-gray-900">
                     {q.name} - {q.description}
                   </option>
                 ))}
@@ -395,12 +395,12 @@ export default function MP4ToMP3Client() {
 
             {/* Time Range Settings */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-3">
                 Time Range (Optional)
               </label>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-xs text-gray-700 mb-1">
                     Start Time (seconds or MM:SS)
                   </label>
                   <input
@@ -408,11 +408,11 @@ export default function MP4ToMP3Client() {
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                     placeholder="0 or 0:00"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent text-sm backdrop-blur-sm"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-xs text-gray-700 mb-1">
                     Duration (seconds or MM:SS)
                   </label>
                   <input
@@ -420,30 +420,30 @@ export default function MP4ToMP3Client() {
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     placeholder="Leave empty for full video"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent text-sm backdrop-blur-sm"
                   />
                 </div>
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-gray-700 mt-2">
                 Leave duration empty to extract audio from start time to end of video
               </p>
             </div>
 
             {/* Audio Processing Options */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-3">
                 Audio Processing
               </label>
-              <label className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label className="flex items-center space-x-3 p-4 border border-gray-300/50 bg-gray-200/50 rounded-xl hover:bg-gray-300/50 cursor-pointer transition-all duration-200 backdrop-blur-sm">
                 <input
                   type="checkbox"
                   checked={normalize}
                   onChange={(e) => setNormalize(e.target.checked)}
-                  className="text-blue-600 focus:ring-blue-500"
+                  className="text-gray-700 focus:ring-gray-600"
                 />
                 <div>
-                  <div className="font-medium text-gray-900">Audio Normalization</div>
-                  <div className="text-sm text-gray-600">Normalize audio levels for consistent volume</div>
+                  <div className="font-medium text-gray-900 text-gray-900">Audio Normalization</div>
+                  <div className="text-sm text-gray-700">Normalize audio levels for consistent volume</div>
                 </div>
               </label>
             </div>
@@ -452,16 +452,16 @@ export default function MP4ToMP3Client() {
             <button
               onClick={handleConvert}
               disabled={!selectedFile || isConverting || !ffmpegLoaded}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
             >
               {!ffmpegLoaded ? loadingMessage : isConverting ? "Extracting Audio..." : "Extract Audio to MP3"}
             </button>
 
             {/* Progress Bar */}
             {isConverting && (
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-300/50 rounded-full h-3">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-gray-500 to-gray-700 h-3 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
@@ -469,7 +469,7 @@ export default function MP4ToMP3Client() {
 
             {/* Error Display */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="bg-red-100 border border-red-300 rounded-xl p-4 backdrop-blur-sm">
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
@@ -483,57 +483,57 @@ export default function MP4ToMP3Client() {
           {conversionResult ? (
             <div className="space-y-6">
               {/* Success Message */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className="bg-green-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
                 <div className="flex items-center space-x-2">
                   <span className="text-green-600 text-xl">✅</span>
-                  <span className="text-green-800 font-medium">Audio Extraction Successful!</span>
+                  <span className="text-green-700 font-medium text-gray-900">Audio Extraction Successful!</span>
                 </div>
               </div>
 
               {/* File Information */}
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
                 <h4 className="font-semibold text-gray-900 mb-3">Extraction Information</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Original Format:</span>
-                    <span className="font-medium">{conversionResult.originalFormat}</span>
+                    <span className="text-gray-700">Original Format:</span>
+                    <span className="font-medium text-gray-900 text-gray-900">{conversionResult.originalFormat}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">MP3 Quality:</span>
-                    <span className="font-medium">{conversionResult.quality}</span>
+                    <span className="text-gray-700">MP3 Quality:</span>
+                    <span className="font-medium text-gray-900">{conversionResult.quality}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Start Time:</span>
-                    <span className="font-medium">{formatDuration(conversionResult.startTime)}</span>
+                    <span className="text-gray-700">Start Time:</span>
+                    <span className="font-medium text-gray-900">{formatDuration(conversionResult.startTime)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Duration:</span>
-                    <span className="font-medium">{formatDuration(conversionResult.duration)}</span>
+                    <span className="text-gray-700">Duration:</span>
+                    <span className="font-medium text-gray-900">{formatDuration(conversionResult.duration)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Original Size:</span>
-                    <span className="font-medium">{formatFileSize(conversionResult.originalSize)}</span>
+                    <span className="text-gray-700">Original Size:</span>
+                    <span className="font-medium text-gray-900">{formatFileSize(conversionResult.originalSize)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">MP3 Size:</span>
-                    <span className="font-medium">{formatFileSize(conversionResult.convertedSize)}</span>
+                    <span className="text-gray-700">MP3 Size:</span>
+                    <span className="font-medium text-gray-900">{formatFileSize(conversionResult.convertedSize)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Size Reduction:</span>
-                    <span className="font-medium text-green-600">
+                    <span className="text-gray-700">Size Reduction:</span>
+                    <span className="font-medium text-gray-900 text-green-600">
                       {((1 - conversionResult.convertedSize / conversionResult.originalSize) * 100).toFixed(1)}%
                     </span>
                   </div>
                   {conversionResult.normalize && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Audio Normalization:</span>
-                      <span className="font-medium text-green-600">✓ Applied</span>
+                      <span className="text-gray-700">Audio Normalization:</span>
+                      <span className="font-medium text-gray-900 text-green-600">✓ Applied</span>
                     </div>
                   )}
                   {conversionResult.conversionMethod && (
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Conversion Method:</span>
-                      <span className="font-medium text-blue-600">{conversionResult.conversionMethod}</span>
+                      <span className="text-gray-700">Conversion Method:</span>
+                      <span className="font-medium text-gray-900 text-blue-600">{conversionResult.conversionMethod}</span>
                     </div>
                   )}
                 </div>
@@ -541,24 +541,24 @@ export default function MP4ToMP3Client() {
 
               {/* Video Information */}
               {conversionResult.videoInfo && (
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <h4 className="font-semibold text-blue-900 mb-3">Original Video Info</h4>
+                <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                  <h4 className="font-semibold text-gray-900 mb-3">Original Video Info</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-blue-700">Duration:</span>
-                      <div className="font-medium text-blue-900">{formatDuration(conversionResult.videoInfo.duration)}</div>
+                      <span className="text-gray-700">Duration:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{formatDuration(conversionResult.videoInfo.duration)}</div>
                     </div>
                     <div>
-                      <span className="text-blue-700">Resolution:</span>
-                      <div className="font-medium text-blue-900">{conversionResult.videoInfo.videoResolution || 'Unknown'}</div>
+                      <span className="text-gray-700">Resolution:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.videoInfo.videoResolution || 'Unknown'}</div>
                     </div>
                     <div>
-                      <span className="text-blue-700">Video Codec:</span>
-                      <div className="font-medium text-blue-900">{conversionResult.videoInfo.videoCodec || 'Unknown'}</div>
+                      <span className="text-gray-700">Video Codec:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.videoInfo.videoCodec || 'Unknown'}</div>
                     </div>
                     <div>
-                      <span className="text-blue-700">Audio Codec:</span>
-                      <div className="font-medium text-blue-900">{conversionResult.videoInfo.audioCodec || 'Unknown'}</div>
+                      <span className="text-gray-700">Audio Codec:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.videoInfo.audioCodec || 'Unknown'}</div>
                     </div>
                   </div>
                 </div>
@@ -566,24 +566,24 @@ export default function MP4ToMP3Client() {
 
               {/* MP3 Information */}
               {conversionResult.mp3Info && (
-                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                  <h4 className="font-semibold text-purple-900 mb-3">MP3 Audio Info</h4>
+                <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+                  <h4 className="font-semibold text-gray-900 mb-3">MP3 Audio Info</h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-purple-700">Duration:</span>
-                      <div className="font-medium text-purple-900">{formatDuration(conversionResult.mp3Info.duration)}</div>
+                      <span className="text-gray-700">Duration:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{formatDuration(conversionResult.mp3Info.duration)}</div>
                     </div>
                     <div>
-                      <span className="text-purple-700">Bitrate:</span>
-                      <div className="font-medium text-purple-900">{conversionResult.mp3Info.bitrate ? Math.round(conversionResult.mp3Info.bitrate / 1000) + ' kbps' : 'Unknown'}</div>
+                      <span className="text-gray-700">Bitrate:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.mp3Info.bitrate ? Math.round(conversionResult.mp3Info.bitrate / 1000) + ' kbps' : 'Unknown'}</div>
                     </div>
                     <div>
-                      <span className="text-purple-700">Sample Rate:</span>
-                      <div className="font-medium text-purple-900">{conversionResult.mp3Info.sampleRate ? Math.round(conversionResult.mp3Info.sampleRate / 1000) + ' kHz' : 'Unknown'}</div>
+                      <span className="text-gray-700">Sample Rate:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.mp3Info.sampleRate ? Math.round(conversionResult.mp3Info.sampleRate / 1000) + ' kHz' : 'Unknown'}</div>
                     </div>
                     <div>
-                      <span className="text-purple-700">Channels:</span>
-                      <div className="font-medium text-purple-900">{conversionResult.mp3Info.channels || 'Unknown'}</div>
+                      <span className="text-gray-700">Channels:</span>
+                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.mp3Info.channels || 'Unknown'}</div>
                     </div>
                   </div>
                 </div>
@@ -592,17 +592,17 @@ export default function MP4ToMP3Client() {
               {/* Download Button */}
               <button
                 onClick={handleDownload}
-                className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-green-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
               >
                 <span>📥</span>
                 <span>Download {conversionResult.fileName}</span>
               </button>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
               <div className="text-6xl mb-4">🎬</div>
               <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Extract Audio</h4>
-              <p className="text-gray-600">
+              <p className="text-gray-700">
                 Select a video file and configure your settings to extract audio to MP3 format.
               </p>
             </div>
@@ -611,26 +611,26 @@ export default function MP4ToMP3Client() {
       </div>
 
       {/* Tips Section */}
-      <div className="mt-8 bg-yellow-50 rounded-lg p-6 border border-yellow-200">
-        <h3 className="text-lg font-semibold text-yellow-900 mb-4">💡 Tips for Best Results</h3>
+      <div className="mt-8 bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">💡 Tips for Best Results</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div className="space-y-2">
-            <div className="font-semibold text-yellow-900">Time Range:</div>
+            <div className="font-semibold text-gray-900">Time Range:</div>
             <div className="text-gray-700">• Use MM:SS format (e.g., 1:30 for 1 minute 30 seconds)</div>
             <div className="text-gray-700">• Leave duration empty to extract from start time to end</div>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold text-yellow-900">Quality:</div>
+            <div className="font-semibold text-gray-900">Quality:</div>
             <div className="text-gray-700">• 320 kbps for highest quality</div>
             <div className="text-gray-700">• 192 kbps for good balance of quality and size</div>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold text-yellow-900">Processing:</div>
+            <div className="font-semibold text-gray-900">Processing:</div>
             <div className="text-gray-700">• Enable normalization for consistent volume levels</div>
             <div className="text-gray-700">• Works with all major video formats</div>
           </div>
           <div className="space-y-2">
-            <div className="font-semibold text-yellow-900">File Size:</div>
+            <div className="font-semibold text-gray-900">File Size:</div>
             <div className="text-gray-700">• MP3 files are typically 10-20% of original video size</div>
             <div className="text-gray-700">• Higher quality = larger file size</div>
           </div>
