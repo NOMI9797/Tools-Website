@@ -96,18 +96,18 @@ export default function ConvertPage() {
   return (
     <div className="space-y-12">
       <header className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#1A2B4C]">Convert</h1>
-        <p className="text-sm text-[#2E2E2E]/70">Free file conversion utilities covering images, documents, video, and audio.</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-white">Convert</h1>
+        <p className="text-sm text-slate-300">Free file conversion utilities covering images, documents, video, and audio.</p>
       </header>
 
       {categories.map((category) => (
         <section key={category.id} className="space-y-6">
           <div className="space-y-2">
-            <h2 className="text-xl font-medium tracking-tight flex items-center gap-2 text-[#1A2B4C]">
+            <h2 className="text-xl font-medium tracking-tight flex items-center gap-2 text-white">
               <span>{category.icon}</span>
               {category.title}
             </h2>
-            <p className="text-sm text-[#2E2E2E]/70">{category.desc}</p>
+            <p className="text-sm text-slate-300">{category.desc}</p>
           </div>
 
           <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -116,23 +116,23 @@ export default function ConvertPage() {
                 key={tool.id}
                 id={tool.id}
                 href={tool.implemented ? tool.href : "#coming-soon"}
-                className={`group rounded-xl border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm p-5 sm:p-6 transition-all shadow-sm ${
-                  tool.implemented ? "hover:shadow-lg hover:border-[#00B4D8]/30" : "opacity-50 cursor-not-allowed"
+                className={`group rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-5 sm:p-6 transition-all shadow-sm ${
+                  tool.implemented ? "hover:shadow-lg hover:border-blue-400/30" : "opacity-50 cursor-not-allowed"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div className="text-2xl">{tool.icon}</div>
                   <div className="space-y-1.5">
-                    <h3 className="font-medium tracking-tight group-hover:opacity-90 text-[#1A2B4C]">
+                    <h3 className="font-medium tracking-tight group-hover:opacity-90 text-white">
                       {tool.title}
-                      {!tool.implemented && <span className="ml-2 text-xs text-[#2E2E2E]/50">(Coming Soon)</span>}
+                      {!tool.implemented && <span className="ml-2 text-xs text-slate-400">(Coming Soon)</span>}
                     </h3>
-                    <p className="text-sm text-[#2E2E2E]/70">{tool.desc}</p>
+                    <p className="text-sm text-slate-300">{tool.desc}</p>
                   </div>
                 </div>
                 {tool.implemented && (
                   <div className="mt-4">
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-[#00B4D8]">
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-blue-400">
                       Open
                       <span aria-hidden>→</span>
                     </span>

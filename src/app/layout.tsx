@@ -53,93 +53,93 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 min-h-screen flex flex-col`}
       >
-        <header className="sticky top-0 z-50 border-b border-gray-200 bg-gray-50/95 backdrop-blur shadow-sm">
+        <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-900/95 backdrop-blur shadow-sm">
           <nav className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-10">
-              <Link href="/" className="font-bold tracking-tight text-xl text-[#1A2B4C]">
+              <Link href="/" className="font-bold tracking-tight text-xl text-white">
                 Toolbox
               </Link>
               <div className="hidden md:flex items-center gap-8 text-sm">
-                <Link href="/" className="text-[#2E2E2E] hover:text-[#1A2B4C] transition-colors font-medium px-2 py-1 rounded-md hover:bg-[#00B4D8]/5">Home</Link>
+                <Link href="/" className="text-slate-300 hover:text-white transition-colors font-medium px-2 py-1 rounded-md hover:bg-blue-400/10">Home</Link>
                 <div className="relative group">
-                  <Link href="/convert" className="text-[#2E2E2E] hover:text-[#1A2B4C] transition-colors font-medium px-2 py-1 rounded-md hover:bg-[#00B4D8]/5">Convert</Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 absolute left-0 top-full mt-2 w-[750px] rounded-lg border border-gray-200 bg-gray-50 shadow-lg p-3">
+                  <Link href="/convert" className="text-slate-300 hover:text-white transition-colors font-medium px-2 py-1 rounded-md hover:bg-blue-400/10">Convert</Link>
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 absolute left-0 top-full mt-2 w-[750px] rounded-lg border border-white/10 bg-slate-800/95 backdrop-blur shadow-lg p-3">
                     <div className="grid grid-cols-3 gap-2">
                       {/* Video & Audio */}
                       <div className="space-y-1">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">🎵 Video & Audio</h4>
-                        <Link href="/convert/audio-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Audio Converter</Link>
-                        <Link href="/convert/mp3-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MP3 Converter</Link>
-                        <Link href="/convert/mp4-mp3" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MP4 to MP3</Link>
-                        <Link href="/convert/video-mp3" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Video to MP3</Link>
-                        <Link href="/convert/mp4-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MP4 Converter</Link>
-                        <Link href="/convert/mov-mp4" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MOV to MP4</Link>
-                        <Link href="/convert/mp3-ogg" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MP3 to OGG</Link>
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">🎵 Video & Audio</h4>
+                        <Link href="/convert/audio-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Audio Converter</Link>
+                        <Link href="/convert/mp3-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">MP3 Converter</Link>
+                        <Link href="/convert/mp4-mp3" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">MP4 to MP3</Link>
+                        <Link href="/convert/video-mp3" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Video to MP3</Link>
+                        <Link href="/convert/mp4-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">MP4 Converter</Link>
+                        <Link href="/convert/mov-mp4" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">MOV to MP4</Link>
+                        <Link href="/convert/mp3-ogg" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">MP3 to OGG</Link>
                       </div>
                       
                       {/* Image */}
                       <div className="space-y-1">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">🖼️ Image</h4>
-                        <Link href="/convert/image-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Image Converter</Link>
-                        <Link href="/convert/webp-png" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">WEBP to PNG</Link>
-                        <Link href="/convert/jfif-png" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">JFIF to PNG</Link>
-                        <Link href="/convert/heic-jpg" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">HEIC to JPG</Link>
-                        <Link href="/convert/heic-png" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">HEIC to PNG</Link>
-                        <Link href="/convert/webp-jpg" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">WEBP to JPG</Link>
-                        <Link href="/convert/svg-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">SVG Converter</Link>
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">🖼️ Image</h4>
+                        <Link href="/convert/image-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Image Converter</Link>
+                        <Link href="/convert/webp-png" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">WEBP to PNG</Link>
+                        <Link href="/convert/jfif-png" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">JFIF to PNG</Link>
+                        <Link href="/convert/heic-jpg" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">HEIC to JPG</Link>
+                        <Link href="/convert/heic-png" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">HEIC to PNG</Link>
+                        <Link href="/convert/webp-jpg" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">WEBP to JPG</Link>
+                        <Link href="/convert/svg-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">SVG Converter</Link>
                       </div>
                       
                       {/* PDF, GIF & Units */}
                       <div className="space-y-1">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">📄 PDF & More</h4>
-                        <Link href="/convert/pdf-to-images" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">PDF to Images</Link>
-                        <Link href="/convert/image-to-pdf" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Image to PDF</Link>
-                        <Link href="/convert/heic-pdf" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">HEIC to PDF</Link>
-                        <Link href="/convert/jpg-pdf" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">JPG to PDF</Link>
-                        <Link href="/convert/video-gif" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Video to GIF</Link>
-                        <Link href="/convert/mp4-gif" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MP4 to GIF</Link>
-                        <Link href="/convert/webm-gif" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">WEBM to GIF</Link>
-                        <Link href="/convert/gif-mp4" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">GIF to MP4</Link>
-                        <Link href="/convert/image-gif" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Image to GIF</Link>
-                        <Link href="/convert/unit-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Unit Converter</Link>
-                        <Link href="/convert/time-converter" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Time Converter</Link>
-                        <Link href="/convert/age-calculator" className="block rounded-md px-2 py-1 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Age Calculator</Link>
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">📄 PDF & More</h4>
+                        <Link href="/convert/pdf-to-images" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">PDF to Images</Link>
+                        <Link href="/convert/image-to-pdf" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Image to PDF</Link>
+                        <Link href="/convert/heic-pdf" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">HEIC to PDF</Link>
+                        <Link href="/convert/jpg-pdf" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">JPG to PDF</Link>
+                        <Link href="/convert/video-gif" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Video to GIF</Link>
+                        <Link href="/convert/mp4-gif" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">MP4 to GIF</Link>
+                        <Link href="/convert/webm-gif" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">WEBM to GIF</Link>
+                        <Link href="/convert/gif-mp4" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">GIF to MP4</Link>
+                        <Link href="/convert/image-gif" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Image to GIF</Link>
+                        <Link href="/convert/unit-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Unit Converter</Link>
+                        <Link href="/convert/time-converter" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Time Converter</Link>
+                        <Link href="/convert/age-calculator" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-blue-400/10 hover:text-white transition-colors">Age Calculator</Link>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="relative group">
-                  <Link href="/compress" className="text-[#2E2E2E] hover:text-[#1A2B4C] transition-colors font-medium px-2 py-1 rounded-md hover:bg-[#00B4D8]/5">Compress</Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 absolute left-0 top-full mt-2 w-[600px] rounded-lg border border-gray-200 bg-gray-50 shadow-lg p-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <Link href="/compress" className="text-slate-300 hover:text-white transition-colors font-medium px-2 py-1 rounded-md hover:bg-blue-400/10">Compress</Link>
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 absolute left-0 top-full mt-2 w-[600px] rounded-lg border border-white/10 bg-slate-800/95 backdrop-blur shadow-lg p-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {/* Video & Audio */}
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">🎵 Video & Audio</h4>
-                        <Link href="/compress/video-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Video Compressor</Link>
-                        <Link href="/compress/mp3-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">MP3 Compressor</Link>
-                        <Link href="/compress/wav-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">WAV Compressor</Link>
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">🎵 Video & Audio</h4>
+                        <Link href="/compress/video-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">Video Compressor</Link>
+                        <Link href="/compress/mp3-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">MP3 Compressor</Link>
+                        <Link href="/compress/wav-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">WAV Compressor</Link>
                       </div>
                       
                       {/* Image */}
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">🖼️ Image</h4>
-                        <Link href="/compress/image-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">Image Compressor</Link>
-                        <Link href="/compress/jpeg-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">JPEG Compressor</Link>
-                        <Link href="/compress/png-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">PNG Compressor</Link>
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">🖼️ Image</h4>
+                        <Link href="/compress/image-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">Image Compressor</Link>
+                        <Link href="/compress/jpeg-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">JPEG Compressor</Link>
+                        <Link href="/compress/png-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">PNG Compressor</Link>
                       </div>
                       
                       {/* PDF & Documents */}
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">📄 PDF & Documents</h4>
-                        <Link href="/compress/pdf-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">PDF Compressor</Link>
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">📄 PDF & Documents</h4>
+                        <Link href="/compress/pdf-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">PDF Compressor</Link>
                       </div>
                       
                       {/* GIF */}
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-semibold text-[#1A2B4C] uppercase tracking-wide mb-2">🎞️ GIF</h4>
-                        <Link href="/compress/gif-compressor" className="block rounded-md px-3 py-2 text-sm text-[#2E2E2E] hover:bg-[#00B4D8]/10 hover:text-[#1A2B4C] transition-colors">GIF Compressor</Link>
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-semibold text-white uppercase tracking-wide mb-2">🎞️ GIF</h4>
+                        <Link href="/compress/gif-compressor" className="block rounded-md px-2 py-1 text-sm text-slate-300 hover:bg-emerald-400/10 hover:text-white transition-colors">GIF Compressor</Link>
                       </div>
                     </div>
                   </div>
@@ -149,13 +149,13 @@ export default function RootLayout({
             <div className="flex items-center gap-4">
               <Link
                 href="#login"
-                className="h-10 px-5 rounded-lg border border-[#1A2B4C]/20 text-sm text-[#2E2E2E] hover:bg-[#1A2B4C]/5 hover:text-[#1A2B4C] hover:border-[#1A2B4C]/30 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                className="h-10 px-5 rounded-lg border border-white/20 text-sm text-slate-300 hover:bg-white/10 hover:text-white hover:border-white/30 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
               >
                 Login
               </Link>
               <Link
                 href="#signup"
-                className="h-10 px-5 rounded-lg bg-gradient-to-r from-[#3CCF91] to-[#00B4D8] text-white text-sm hover:from-[#3CCF91]/90 hover:to-[#00B4D8]/90 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                className="h-10 px-5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
               >
                 Sign up
               </Link>

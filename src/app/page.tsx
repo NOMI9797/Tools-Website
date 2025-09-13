@@ -19,68 +19,126 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
       {/* Hero Section */}
-      <section className="py-20 sm:py-28 bg-gray-50">
-        <div className="mx-auto max-w-5xl px-6 text-center">
-          <div className="inline-flex items-center px-4 py-2 rounded-full border border-[#00B4D8]/30 bg-[#00B4D8]/10 text-[#1A2B4C] text-sm font-medium mb-8">
-            ✨ Professional File Tools
+      <section className="relative py-24 sm:py-32 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 opacity-60" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '60px 60px'
+          }}></div>
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="relative mx-auto max-w-6xl px-6">
+          <div className="text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 border border-white/20 text-white text-sm font-medium mb-8 backdrop-blur-md">
+              <div className="w-2 h-2 bg-emerald-400 rounded-full mr-3 animate-pulse"></div>
+              Enterprise-Grade File Processing
+            </div>
+            
+            {/* Main Heading */}
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight">
+              Professional File
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                Management Suite
+              </span>
+            </h1>
+            
+            {/* Subtitle */}
+            <p className="text-xl sm:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+              Advanced file conversion and compression tools for 
+              <span className="text-white font-semibold"> professionals and businesses</span>.
+              <br />
+              <span className="text-lg text-slate-400">Secure • Fast • Reliable • No registration required</span>
+            </p>
+            
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-20">
+              <Link 
+                href="/convert" 
+                className="group relative px-10 py-5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 transform hover:-translate-y-1"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-3">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                  </svg>
+                  Start Converting
+                </span>
+              </Link>
+              
+              <Link 
+                href="/compress" 
+                className="group px-10 py-5 border-2 border-white/20 text-white rounded-xl font-semibold text-lg hover:bg-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
+              >
+                <span className="flex items-center justify-center gap-3">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Optimize Files
+                </span>
+              </Link>
+            </div>
+            
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Enterprise Security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                </svg>
+                <span>Zero Data Collection</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <svg className="w-4 h-4 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                </svg>
+                <span>High Performance</span>
+              </div>
+            </div>
           </div>
-          
-          <h1 className="text-5xl sm:text-6xl font-bold text-[#1A2B4C] mb-6 leading-tight">
-            Free Online Tools
-          </h1>
-          
-          <p className="text-xl text-[#2E2E2E]/80 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Convert and compress your files with professional-grade tools. 
-            No signup required, completely free, and your files never leave your browser.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link 
-              href="/convert" 
-              className="px-8 py-4 bg-[#3CCF91] text-white rounded-lg font-semibold hover:bg-[#3CCF91]/90 transition-colors shadow-lg hover:shadow-xl"
-            >
-              Convert Files
-            </Link>
-            <Link 
-              href="/compress" 
-              className="px-8 py-4 border border-[#1A2B4C]/30 text-[#1A2B4C] rounded-lg font-semibold hover:bg-[#1A2B4C]/5 hover:border-[#1A2B4C]/50 transition-all shadow-lg"
-            >
-              Compress Files
-            </Link>
-          </div>
-
-          {/* Stats */}
+        </div>
+        
+        {/* Stats */}
+        <div className="relative mx-auto max-w-6xl px-6 -mt-16">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl font-bold text-[#1A2B4C] mb-1">30+</div>
-              <div className="text-[#2E2E2E]/70 text-sm">Tools Available</div>
+            <div className="group p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-1">
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">30+</div>
+              <div className="text-slate-300 text-sm font-medium">Professional Tools</div>
             </div>
-            <div className="p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl font-bold text-[#1A2B4C] mb-1">100%</div>
-              <div className="text-[#2E2E2E]/70 text-sm">Free to Use</div>
+            <div className="group p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-1">
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400 mb-2">100%</div>
+              <div className="text-slate-300 text-sm font-medium">Free Forever</div>
             </div>
-            <div className="p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl font-bold text-[#1A2B4C] mb-1">9</div>
-              <div className="text-[#2E2E2E]/70 text-sm">Categories</div>
+            <div className="group p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-1">
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400 mb-2">9</div>
+              <div className="text-slate-300 text-sm font-medium">Categories</div>
             </div>
-            <div className="p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl font-bold text-[#1A2B4C] mb-1">0</div>
-              <div className="text-[#2E2E2E]/70 text-sm">Signup Required</div>
+            <div className="group p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl hover:shadow-blue-500/20 transition-all duration-300 hover:-translate-y-1">
+              <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400 mb-2">0</div>
+              <div className="text-slate-300 text-sm font-medium">Registration</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Tools Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-slate-800 via-blue-900 to-indigo-900">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#1A2B4C] mb-4">
+            <h2 className="text-4xl font-bold text-white mb-4">
               Available Tools
             </h2>
-            <p className="text-xl text-[#2E2E2E]/80 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Professional tools for all your file conversion and compression needs
             </p>
           </div>
@@ -89,12 +147,12 @@ export default function HomePage() {
           <div className="mb-16">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-2xl font-bold text-[#1A2B4C] mb-2">Convert</h3>
-                <p className="text-[#2E2E2E]/70">Transform files between different formats</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Convert</h3>
+                <p className="text-slate-300">Transform files between different formats</p>
               </div>
               <Link 
                 href="/convert" 
-                className="inline-flex items-center gap-2 px-6 py-3 border border-[#00B4D8]/30 bg-[#00B4D8]/10 text-[#1A2B4C] rounded-lg hover:bg-[#00B4D8]/20 hover:border-[#00B4D8]/50 transition-all font-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-blue-400/30 bg-blue-400/10 text-white rounded-lg hover:bg-blue-400/20 hover:border-blue-400/50 transition-all font-medium"
               >
                 View all tools →
               </Link>
@@ -103,42 +161,42 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <Link 
                 href="/convert#video-audio" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-blue-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">🎵</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">Video & Audio</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Convert between MP3, MP4, WAV, OGG formats</p>
-                <div className="text-xs text-[#00B4D8] font-medium">7 tools available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">Video & Audio</h4>
+                <p className="text-slate-300 text-sm mb-4">Convert between MP3, MP4, WAV, OGG formats</p>
+                <div className="text-xs text-blue-400 font-medium">7 tools available</div>
               </Link>
 
               <Link 
                 href="/convert#image" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-blue-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">🖼️</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">Images</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Convert between JPG, PNG, WEBP, HEIC formats</p>
-                <div className="text-xs text-[#00B4D8] font-medium">7 tools available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">Images</h4>
+                <p className="text-slate-300 text-sm mb-4">Convert between JPG, PNG, WEBP, HEIC formats</p>
+                <div className="text-xs text-blue-400 font-medium">7 tools available</div>
               </Link>
 
               <Link 
                 href="/convert#pdf-docs" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-blue-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">📄</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">PDF & Documents</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Convert PDFs and document formats</p>
-                <div className="text-xs text-[#00B4D8] font-medium">4 tools available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">PDF & Documents</h4>
+                <p className="text-slate-300 text-sm mb-4">Convert PDFs and document formats</p>
+                <div className="text-xs text-blue-400 font-medium">4 tools available</div>
               </Link>
 
               <Link 
                 href="/convert#gif" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-blue-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">🎞️</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">GIF Tools</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Create and convert animated GIFs</p>
-                <div className="text-xs text-[#00B4D8] font-medium">5 tools available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">GIF Tools</h4>
+                <p className="text-slate-300 text-sm mb-4">Create and convert animated GIFs</p>
+                <div className="text-xs text-blue-400 font-medium">5 tools available</div>
               </Link>
             </div>
           </div>
@@ -147,12 +205,12 @@ export default function HomePage() {
           <div>
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h3 className="text-2xl font-bold text-[#1A2B4C] mb-2">Compress</h3>
-                <p className="text-[#2E2E2E]/70">Reduce file size while maintaining quality</p>
+                <h3 className="text-2xl font-bold text-white mb-2">Compress</h3>
+                <p className="text-slate-300">Reduce file size while maintaining quality</p>
               </div>
               <Link 
                 href="/compress" 
-                className="inline-flex items-center gap-2 px-6 py-3 border border-[#00B4D8]/30 bg-[#00B4D8]/10 text-[#1A2B4C] rounded-lg hover:bg-[#00B4D8]/20 hover:border-[#00B4D8]/50 transition-all font-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 border border-emerald-400/30 bg-emerald-400/10 text-white rounded-lg hover:bg-emerald-400/20 hover:border-emerald-400/50 transition-all font-medium"
               >
                 View all tools →
               </Link>
@@ -161,42 +219,42 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <Link 
                 href="/compress#video-audio" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-emerald-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">📹</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">Video & Audio</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Reduce video and audio file sizes</p>
-                <div className="text-xs text-[#00B4D8] font-medium">3 tools available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">Video & Audio</h4>
+                <p className="text-slate-300 text-sm mb-4">Reduce video and audio file sizes</p>
+                <div className="text-xs text-emerald-400 font-medium">3 tools available</div>
               </Link>
 
               <Link 
                 href="/compress#image" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-emerald-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">🎨</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">Images</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Optimize images with quality control</p>
-                <div className="text-xs text-[#00B4D8] font-medium">3 tools available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">Images</h4>
+                <p className="text-slate-300 text-sm mb-4">Optimize images with quality control</p>
+                <div className="text-xs text-emerald-400 font-medium">3 tools available</div>
               </Link>
 
               <Link 
                 href="/compress#pdf-docs" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-emerald-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">📑</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">PDF & Documents</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Reduce PDF size effectively</p>
-                <div className="text-xs text-[#00B4D8] font-medium">1 tool available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">PDF & Documents</h4>
+                <p className="text-slate-300 text-sm mb-4">Reduce PDF size effectively</p>
+                <div className="text-xs text-emerald-400 font-medium">1 tool available</div>
               </Link>
 
               <Link 
                 href="/compress#gif" 
-                className="group p-6 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl hover:shadow-lg hover:border-[#00B4D8]/30 transition-all"
+                className="group p-6 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl hover:shadow-lg hover:border-emerald-400/30 transition-all"
               >
                 <div className="text-3xl mb-4">🎥</div>
-                <h4 className="text-lg font-semibold text-[#1A2B4C] mb-2">GIF Compression</h4>
-                <p className="text-[#2E2E2E]/70 text-sm mb-4">Optimize GIF animations</p>
-                <div className="text-xs text-[#00B4D8] font-medium">1 tool available</div>
+                <h4 className="text-lg font-semibold text-white mb-2">GIF Compression</h4>
+                <p className="text-slate-300 text-sm mb-4">Optimize GIF animations</p>
+                <div className="text-xs text-emerald-400 font-medium">1 tool available</div>
               </Link>
             </div>
           </div>
@@ -204,38 +262,38 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
         <div className="mx-auto max-w-6xl px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#1A2B4C] mb-4">
+            <h2 className="text-4xl font-bold text-white mb-4">
               Why Choose Our Tools?
             </h2>
-            <p className="text-xl text-[#2E2E2E]/80 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
               Built with modern technology and a focus on privacy, performance, and quality
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-8 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-lg hover:border-[#00B4D8]/30 transition-all">
+            <div className="text-center p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400/30 transition-all">
               <div className="text-4xl mb-6">🔒</div>
-              <h3 className="text-xl font-semibold text-[#1A2B4C] mb-4">Private & Secure</h3>
-              <p className="text-[#2E2E2E]/70 leading-relaxed">
+              <h3 className="text-xl font-semibold text-white mb-4">Private & Secure</h3>
+              <p className="text-slate-300 leading-relaxed">
                 All processing happens in your browser. Your files never leave your device, ensuring complete privacy and security.
               </p>
             </div>
 
-            <div className="text-center p-8 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-lg hover:border-[#00B4D8]/30 transition-all">
+            <div className="text-center p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400/30 transition-all">
               <div className="text-4xl mb-6">⚡</div>
-              <h3 className="text-xl font-semibold text-[#1A2B4C] mb-4">Fast & Efficient</h3>
-              <p className="text-[#2E2E2E]/70 leading-relaxed">
+              <h3 className="text-xl font-semibold text-white mb-4">Fast & Efficient</h3>
+              <p className="text-slate-300 leading-relaxed">
                 Lightning-fast processing with modern web technologies and optimized algorithms for the best performance.
               </p>
             </div>
 
-            <div className="text-center p-8 border border-gray-300/50 bg-gray-50/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-lg hover:border-[#00B4D8]/30 transition-all">
+            <div className="text-center p-8 border border-white/10 bg-white/5 backdrop-blur-md rounded-xl shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400/30 transition-all">
               <div className="text-4xl mb-6">💎</div>
-              <h3 className="text-xl font-semibold text-[#1A2B4C] mb-4">Professional Quality</h3>
-              <p className="text-[#2E2E2E]/70 leading-relaxed">
+              <h3 className="text-xl font-semibold text-white mb-4">Professional Quality</h3>
+              <p className="text-slate-300 leading-relaxed">
                 High-quality conversion and compression with customizable settings to meet your specific needs.
               </p>
             </div>
