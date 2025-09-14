@@ -1,17 +1,35 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import FileUpload from '@/components/FileUpload';
 
-type Raster = "png" | "jpg" | "webp";
 
 export default function PdfToImagesClient() {
   const [file, setFile] = useState<File | null>(null);
-  const [target, setTarget] = useState<Raster>("png");
-  const [density, setDensity] = useState<number>(144);
   const [isLoading, setIsLoading] = useState(false);
   const [images, setImages] = useState<Array<{ name: string; url: string }>>([]);
   const [pdfjsLoaded, setPdfjsLoaded] = useState(false);
-  const isDisabled = useMemo(() => isLoading || !file, [isLoading, file]);
+  const [error, setError] = useState<string | null>(null);
+
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const ALLOWED_MIME_TYPES = ['application/pdf'];
+  const ALLOWED_EXTENSIONS = ['pdf'];
+
+  const resetState = () => {
+    setFile(null);
+    setImages([]);
+    setError(null);
+  };
+
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setFile(selectedFile);
+      setError(null);
+      setImages([]);
+    } else {
+      resetState();
+    }
+  };
 
   useEffect(() => {
     // Load PDF.js from CDN
@@ -59,25 +77,13 @@ export default function PdfToImagesClient() {
   async function handleConvert() {
     if (!file) return;
     
-    // Validate file type
-    if (file.type !== "application/pdf") {
-      alert("Please select a PDF file");
-      return;
-    }
-
-    // Check file size (limit to 50MB for PDFs)
-    if (file.size > 50 * 1024 * 1024) {
-      alert('File too large. Please select a PDF file smaller than 50MB.');
-      return;
-    }
-    
     setIsLoading(true);
     setImages([]);
     try {
       const form = new FormData();
       form.append("file", file);
-      form.append("target", target);
-      form.append("density", String(density));
+      form.append("target", "png");
+      form.append("density", "144");
       
       const res = await fetch("/api/convert/pdf-to-images", { method: "POST", body: form });
       const data = await res.json();
@@ -113,7 +119,7 @@ export default function PdfToImagesClient() {
           if (!context) throw new Error("Canvas context not available");
           
           // Calculate dimensions based on density
-          const viewport = pageObj.getViewport({ scale: density / 72 });
+          const viewport = pageObj.getViewport({ scale: 144 / 72 });
           canvas.width = viewport.width;
           canvas.height = viewport.height;
           
@@ -125,10 +131,10 @@ export default function PdfToImagesClient() {
           }).promise;
           
           // Convert canvas to image
-          const imageDataUrl = canvas.toDataURL(`image/${target}`, 0.9);
+          const imageDataUrl = canvas.toDataURL(`image/png`, 0.9);
           
           // Update filename to match target format
-          const imageName = page.filename.replace('.pdf', `.${target}`);
+          const imageName = page.filename.replace('.pdf', `.png`);
           
           imgs.push({
             name: imageName,
@@ -156,7 +162,7 @@ export default function PdfToImagesClient() {
         const out: Array<{ name: string; url: string }> = [];
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
-          const scale = density / 72; // PDF points are 72 DPI
+          const scale = 144 / 72; // PDF points are 72 DPI
           const viewport = page.getViewport({ scale });
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
@@ -164,8 +170,8 @@ export default function PdfToImagesClient() {
           canvas.width = viewport.width as number;
           canvas.height = viewport.height as number;
           await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-          const url = canvas.toDataURL(target === "jpg" ? "image/jpeg" : target === "webp" ? "image/webp" : "image/png");
-          out.push({ name: `page-${i}.${target}`, url });
+          const url = canvas.toDataURL("image/png");
+          out.push({ name: `page-${i}.png`, url });
         }
         setImages(out);
       } catch (clientErr) {
@@ -186,273 +192,91 @@ export default function PdfToImagesClient() {
     a.remove();
   }
 
-  function handleReset() {
-    setFile(null);
-    setImages([]);
-  }
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Convert PDF to Images</h3>
-          
-          <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select PDF File
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => {
-                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">📄</div>
-                  <div className="text-gray-700">
-                    {file ? file.name : "Click to select PDF file"}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Supports: PDF format only
-                  </div>
-                </button>
-              </div>
-              
-              {file && (
-                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">📄</span>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{file.name}</div>
-                      <div className="text-sm text-gray-700">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
+        <div className="space-y-6">
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="📄"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
 
-            {/* Format Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Output Format
-              </label>
-              <div className="grid grid-cols-3 gap-3">
-                {["png", "jpg", "webp"].map((fmt) => (
-                  <button
-                    key={fmt}
-                    type="button"
-                    onClick={() => setTarget(fmt as Raster)}
-                    className={`py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
-                      target === fmt 
-                        ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg" 
-                        : "bg-gray-200/50 text-gray-700 hover:bg-gray-300/50 border border-gray-300/50"
-                    }`}
-                  >
-                    {fmt.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">
-                Choose your preferred image format for conversion
-              </p>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
             </div>
+          )}
 
-            {/* Density Slider */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Image Quality (DPI): {density}
-              </label>
-              <div className="space-y-3">
-                <input
-                  type="range"
-                  min={72}
-                  max={300}
-                  step={12}
-                  value={density}
-                  onChange={(e) => setDensity(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                />
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>72 DPI (Fast)</span>
-                  <span>300 DPI (High Quality)</span>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Higher density produces sharper images but larger files.
-                </p>
+          {/* PDF.js Status */}
+          {!pdfjsLoaded && (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                <span className="text-sm text-gray-700">Loading PDF.js...</span>
+              </div>
+              <div className="mt-2 w-full bg-gray-300/50 rounded-full h-2">
+                <div className="bg-gray-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
               </div>
             </div>
+          )}
+          {pdfjsLoaded && (
+            <div className="bg-green-100/50 border border-green-300/50 rounded-xl p-3 backdrop-blur-sm">
+              <div className="flex items-center space-x-2">
+                <span className="text-green-600">✓</span>
+                <span className="text-sm text-green-700 font-medium">PDF.js ready for conversion</span>
+              </div>
+            </div>
+          )}
 
-            {/* Convert Button */}
+          {/* Convert Button - Only show after file upload and before conversion */}
+          {file && images.length === 0 && (
             <button
               onClick={handleConvert}
-              disabled={isDisabled || !pdfjsLoaded}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+              disabled={isLoading || !pdfjsLoaded}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
             >
-              {isLoading ? "Converting…" : "Convert PDF to Images"}
+              <span className="flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting to Images...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Convert to Images
+                  </>
+                )}
+              </span>
             </button>
+          )}
 
-            {/* PDF.js Status */}
-            {!pdfjsLoaded && (
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                  <span className="text-sm text-gray-700">Loading PDF.js...</span>
-                </div>
-                <div className="mt-2 w-full bg-gray-300/50 rounded-full h-2">
-                  <div className="bg-gray-600 h-2 rounded-full animate-pulse" style={{width: '60%'}}></div>
-                </div>
-              </div>
-            )}
-            {pdfjsLoaded && (
-              <div className="bg-green-100/50 border border-green-300/50 rounded-xl p-3 backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <span className="text-green-600">✓</span>
-                  <span className="text-sm text-green-700 font-medium">PDF.js ready for conversion</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Results</h3>
-          
-          {images.length > 0 ? (
-            <div className="space-y-6">
-              {/* Results Summary */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-2">Conversion Complete</h4>
-                <p className="text-sm text-gray-700">
-                  Successfully converted {images.length} page{images.length > 1 ? 's' : ''} to {target.toUpperCase()} format
-                </p>
-              </div>
-
-              {/* Images Grid */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Generated Images</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  {images.map((img, i) => (
-                    <div key={i} className="bg-white/50 rounded-lg overflow-hidden border border-gray-300/50">
-                      <img 
-                        src={img.url} 
-                        alt={img.name} 
-                        className="h-32 w-full object-cover" 
-                      />
-                      <div className="p-3 space-y-2">
-                        <p className="text-xs font-medium text-gray-900 truncate" title={img.name}>
-                          {img.name}
-                        </p>
-                        <button
-                          onClick={() => handleDownloadImage(img.url, img.name)}
-                          className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-2 px-3 rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all duration-200 text-xs font-medium"
-                        >
-                          📥 Download
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Download All Button */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Download All Images</h4>
-                <div className="flex space-x-3">
-                  <button
-                    onClick={() => {
-                      images.forEach((img, index) => {
-                        setTimeout(() => handleDownloadImage(img.url, img.name), index * 500);
-                      });
-                    }}
-                    className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
-                  >
-                    📥 Download All ({images.length})
-                  </button>
-                  <button
-                    onClick={handleReset}
-                    className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
-                  >
-                    🔄 Convert Another
-                  </button>
-                </div>
-              </div>
-
-              {/* Conversion Details */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Source Format:</span>
-                    <div className="font-medium text-gray-900">PDF</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Output Format:</span>
-                    <div className="font-medium text-gray-900">{target.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Pages Converted:</span>
-                    <div className="font-medium text-gray-900">{images.length}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Quality (DPI):</span>
-                    <div className="font-medium text-gray-900">{density}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : file ? (
-            <div className="space-y-6">
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Format:</span>
-                    <div className="font-medium text-gray-900">PDF</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Target Format:</span>
-                    <div className="font-medium text-gray-900">{target.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">File Size:</span>
-                    <div className="font-medium text-gray-900">{file ? (file.size / (1024 * 1024)).toFixed(2) : '0'} MB</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Quality (DPI):</span>
-                    <div className="font-medium text-gray-900">{density}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ready to Convert */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-                <div className="text-6xl mb-4">📄</div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-                <p className="text-gray-700">
-                  Your PDF is ready to be converted to {target.toUpperCase()} images.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">📄</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-700">
-                Select a PDF file to start converting pages to {target.toUpperCase()} images.
-              </p>
-            </div>
+          {/* Download All Button - Only show after conversion */}
+          {images.length > 0 && (
+            <button
+              onClick={() => {
+                images.forEach((img, index) => {
+                  setTimeout(() => handleDownloadImage(img.url, img.name), index * 500);
+                });
+              }}
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download All Images ({images.length})
+              </span>
+            </button>
           )}
         </div>
       </div>

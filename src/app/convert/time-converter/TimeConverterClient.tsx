@@ -186,12 +186,6 @@ export default function TimeConverterClient() {
     setIsConverting(false);
   };
 
-  const handleReset = () => {
-    setInputValue("");
-    setResult("");
-    setAdditionalInfo(null);
-    setIsConverting(false);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -210,44 +204,39 @@ export default function TimeConverterClient() {
   }, [inputValue, fromUnit, toUnit, convertValue]);
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Category Selection */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Time Categories</h3>
-          
+    <div className="max-w-4xl mx-auto">
+      <div className="bg-transparent p-8">
+        <div className="space-y-6">
+          {/* Category Selection */}
           <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-            <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Time Categories</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {timeCategories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  className={`text-center px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
                     selectedCategory === category.id
                       ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg"
                       : "bg-gray-300/50 text-gray-900 hover:bg-gray-400/50 border border-gray-300/50"
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg">{category.icon}</span>
-                    <span className="font-medium">{category.name}</span>
-                  </div>
+                  <div className="text-2xl mb-1">{category.icon}</div>
+                  <div className="text-xs">{category.name}</div>
                 </button>
               ))}
             </div>
           </div>
-        </div>
 
-        {/* Conversion Interface */}
-        <div className="lg:col-span-3">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">
-            {currentCategory?.icon} {currentCategory?.name} Conversion
-          </h3>
+          {/* Conversion Interface */}
+          <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6 text-center">
+              {currentCategory?.icon} {currentCategory?.name} Conversion
+            </h3>
           
-          <div className="space-y-6">
-            {/* Input Section */}
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-              <h4 className="font-semibold text-gray-900 mb-4">Convert From</h4>
+            {/* Conversion Interface */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* From Section */}
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -279,25 +268,22 @@ export default function TimeConverterClient() {
                   </select>
                 </div>
               </div>
-            </div>
 
-            {/* Swap Button */}
-            <div className="flex justify-center">
-              <button
-                onClick={swapUnits}
-                className="p-4 rounded-full bg-gray-200/50 border border-gray-300/50 hover:bg-gray-300/50 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5"
-                title="Swap units"
-              >
-                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Output Section */}
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-              <h4 className="font-semibold text-gray-900 mb-4">Convert To</h4>
+              {/* To Section */}
               <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Result
+                  </label>
+                  <input
+                    type="text"
+                    value={result}
+                    readOnly
+                    placeholder="Result will appear here"
+                    className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none"
+                  />
+                </div>
+                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     To Unit
@@ -317,146 +303,41 @@ export default function TimeConverterClient() {
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex space-x-4">
+            {/* Swap Button */}
+            <div className="flex justify-center">
               <button
-                onClick={convertValue}
-                disabled={!inputValue || isConverting}
-                className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+                onClick={swapUnits}
+                className="p-3 rounded-full bg-gray-200/50 border border-gray-300/50 hover:bg-gray-300/50 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5"
+                title="Swap units"
               >
-                {isConverting ? "Converting..." : "Convert Time"}
-              </button>
-              
-              <button
-                onClick={handleReset}
-                className="px-6 py-4 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50 font-semibold"
-              >
-                Reset
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
               </button>
             </div>
 
-            {/* Conversion Result */}
-            {result && (
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Conversion Result</h4>
-                <div className="bg-gray-300/50 rounded-lg p-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-gray-900 mb-2">
-                      {result}
-                    </div>
-                    <div className="text-gray-700 text-lg">
-                      {currentCategory?.units.find(u => u.id === toUnit)?.symbol}
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">From:</span>
-                    <div className="font-medium text-gray-900">
-                      {inputValue} {currentCategory?.units.find(u => u.id === fromUnit)?.symbol}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">To:</span>
-                    <div className="font-medium text-gray-900">
-                      {result} {currentCategory?.units.find(u => u.id === toUnit)?.symbol}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Additional Information */}
-            {additionalInfo && (
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Additional Information</h4>
-                <div className="space-y-4">
-                  <div className="bg-gray-300/50 rounded-lg p-4">
-                    <div className="text-center">
-                      <div className="text-lg font-semibold text-gray-900 mb-1">Human Readable</div>
-                      <div className="text-gray-700">{additionalInfo.humanReadable}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Seconds</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalSeconds?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Minutes</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalMinutes?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Hours</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalHours?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Days</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalDays?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Weeks</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalWeeks?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Months</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalMonths?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Years</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalYears?.toFixed(2)}</div>
-                    </div>
-                    <div className="bg-gray-300/50 rounded-lg p-3 text-center">
-                      <div className="text-gray-700">Milliseconds</div>
-                      <div className="font-medium text-gray-900">{additionalInfo.totalMilliseconds?.toFixed(0)}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Reference */}
-      <div className="mt-8">
-        <h3 className="text-lg font-semibold text-gray-900 mb-6">Quick Reference</h3>
-        <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Second</div>
-              <div className="text-gray-700">= 1,000 milliseconds</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Minute</div>
-              <div className="text-gray-700">= 60 seconds</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Hour</div>
-              <div className="text-gray-700">= 60 minutes</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Day</div>
-              <div className="text-gray-700">= 24 hours</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Week</div>
-              <div className="text-gray-700">= 7 days</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Month</div>
-              <div className="text-gray-700">= 30 days</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Year</div>
-              <div className="text-gray-700">= 365 days</div>
-            </div>
-            <div className="bg-gray-300/50 p-3 rounded-lg text-center">
-              <div className="font-semibold text-gray-900">1 Leap Year</div>
-              <div className="text-gray-700">= 366 days</div>
-            </div>
+            {/* Convert Button */}
+            <button
+              onClick={convertValue}
+              disabled={!inputValue || isConverting}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                {isConverting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Convert Time
+                  </>
+                )}
+              </span>
+            </button>
           </div>
         </div>
       </div>

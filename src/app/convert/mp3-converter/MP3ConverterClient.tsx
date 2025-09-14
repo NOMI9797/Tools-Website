@@ -2,9 +2,9 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import FileUpload from '@/components/FileUpload';
 
 export default function MP3ConverterClient() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [convertedAudioUrl, setConvertedAudioUrl] = useState<string | null>(null);
   const [convertedFileName, setConvertedFileName] = useState<string>('');
@@ -12,58 +12,25 @@ export default function MP3ConverterClient() {
   const [error, setError] = useState<string | null>(null);
 
   const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-  const supportedInputFormats = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'aiff', 'au'];
   const ALLOWED_MIME_TYPES = [
     'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/aac', 'audio/mp4',
     'audio/x-m4a', 'audio/wave', 'audio/x-wav', 'audio/vorbis', 'audio/x-ms-wma',
     'audio/aiff', 'audio/basic'
   ];
+  const ALLOWED_EXTENSIONS = ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma', 'aiff', 'au'];
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
-      
-      if (!ALLOWED_MIME_TYPES.includes(selectedFile.type) && !supportedInputFormats.includes(fileExtension || '')) {
-        setError(`Unsupported file format: ${fileExtension}. Please select a supported audio file.`);
-        return;
-      }
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setError(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
-        return;
-      }
-      setFile(selectedFile);
-      setError(null);
-      setConvertedAudioUrl(null);
-      setConvertedFileName('');
-    }
+  const resetState = () => {
+    setFile(null);
+    setConvertedAudioUrl(null);
+    setConvertedFileName('');
+    setError(null);
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const selectedFile = e.dataTransfer.files?.[0];
-    if (selectedFile) {
-      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
-      
-      if (!ALLOWED_MIME_TYPES.includes(selectedFile.type) && !supportedInputFormats.includes(fileExtension || '')) {
-        setError(`Unsupported file format: ${fileExtension}. Please select a supported audio file.`);
-        return;
-      }
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setError(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
-        return;
-      }
-      setFile(selectedFile);
-      setError(null);
-      setConvertedAudioUrl(null);
-      setConvertedFileName('');
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleFileChange = (selectedFile: File) => {
+    setFile(selectedFile);
+    setError(null);
+    setConvertedAudioUrl(null);
+    setConvertedFileName('');
   };
 
   const handleConvert = useCallback(async () => {
@@ -127,15 +94,6 @@ export default function MP3ConverterClient() {
     }
   };
 
-  const handleReset = () => {
-    setFile(null);
-    setConvertedAudioUrl(null);
-    setConvertedFileName('');
-    setError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const getFileIcon = (extension: string): string => {
     switch (extension.toLowerCase()) {
@@ -154,58 +112,28 @@ export default function MP3ConverterClient() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-transparent p-8">
-          <div className="space-y-6">
-          {/* Upload Area */}
-          <div 
-            className="border-2 border-dashed border-gray-300/20 rounded-xl p-12 text-center hover:border-gray-400/30 transition-all duration-200 cursor-pointer group"
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-          >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-              accept="audio/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-            <div className="text-6xl mb-6 group-hover:scale-110 transition-transform">🎵</div>
-            <div className="text-gray-700 font-medium mb-2 text-lg">Click to select or drag & drop</div>
-            <div className="text-sm text-gray-600">Supports: MP3, WAV, OGG, FLAC, AAC, M4A, WMA, AIFF</div>
-            <div className="text-xs text-gray-500 mt-2">Max file size: 100MB</div>
-              </div>
-              
-          {file && (
-            <div className="p-4 bg-gray-200/20 border border-gray-300/20 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-center space-x-3">
-                <span className="text-2xl">{getFileIcon(file.name.split('.').pop() || '')}</span>
-                    <div className="flex-1">
-                  <div className="font-medium text-gray-900">{file.name}</div>
-                  <div className="text-sm text-gray-600">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
-                  </div>
-                </div>
-                <button
-                  onClick={handleReset}
-                  className="text-gray-500 hover:text-gray-700 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          )}
+        <div className="space-y-6">
+          {/* File Upload */}
+          <FileUpload
+            onFileSelect={handleFileChange}
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            icon="🎵"
+            placeholder="Upload an audio file to convert to MP3"
+          />
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
-              <span className="block sm:inline">{error}</span>
+            <div className="bg-red-200/50 border border-red-300/50 rounded-xl p-4 backdrop-blur-sm">
+              <p className="text-red-700 text-sm">{error}</p>
             </div>
           )}
 
-            {/* Convert Button */}
-            <button
-              onClick={handleConvert}
+          {/* Convert Button */}
+          <button
+            onClick={handleConvert}
             disabled={!file || isLoading}
-            className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
           >
             <span className="flex items-center justify-center gap-3">
               {isLoading ? (
@@ -224,17 +152,17 @@ export default function MP3ConverterClient() {
             </span>
           </button>
 
-              {/* Download Button */}
+          {/* Download Button */}
           {convertedAudioUrl && (
-              <button
-                onClick={handleDownload}
-              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+            <button
+              onClick={handleDownload}
+              className="w-full py-4 bg-green-600/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 relative z-10"
             >
               <span className="flex items-center justify-center gap-3">
                 <ArrowDownTrayIcon className="w-5 h-5" />
                 Download MP3 File
               </span>
-              </button>
+            </button>
           )}
         </div>
       </div>

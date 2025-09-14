@@ -1,17 +1,41 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import FileUpload from '@/components/FileUpload';
 
 type Target = "png" | "jpg" | "webp" | "svg";
 
 export default function ImageConverterClient() {
   const [file, setFile] = useState<File | null>(null);
-  const [target, setTarget] = useState<Target>("png");
-  const [quality, setQuality] = useState<number>(80);
   const [isLoading, setIsLoading] = useState(false);
   const [convertedImageUrl, setConvertedImageUrl] = useState<string | null>(null);
   const [convertedFileName, setConvertedFileName] = useState<string>("");
-  const isDisabled = useMemo(() => isLoading || !file, [isLoading, file]);
+  const [error, setError] = useState<string | null>(null);
+
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const ALLOWED_MIME_TYPES = [
+    'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp',
+    'image/svg+xml', 'image/tiff', 'image/ico', 'image/avif'
+  ];
+  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'tiff', 'ico', 'avif'];
+
+  const resetState = () => {
+    setFile(null);
+    setConvertedImageUrl(null);
+    setConvertedFileName('');
+    setError(null);
+  };
+
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setFile(selectedFile);
+      setError(null);
+      setConvertedImageUrl(null);
+      setConvertedFileName('');
+    } else {
+      resetState();
+    }
+  };
 
   async function handleConvert() {
     if (!file) return;
@@ -19,8 +43,8 @@ export default function ImageConverterClient() {
     try {
       const form = new FormData();
       form.append("file", file);
-      form.append("target", target);
-      form.append("quality", String(quality));
+      form.append("target", "png");
+      form.append("quality", "80");
 
       const res = await fetch("/api/convert/image", { method: "POST", body: form });
       if (!res.ok) throw new Error("Failed");
@@ -29,7 +53,7 @@ export default function ImageConverterClient() {
       
       // Set the converted image for preview
       setConvertedImageUrl(url);
-      setConvertedFileName(`converted.${target}`);
+      setConvertedFileName(`converted.png`);
     } catch (e) {
       console.error(e);
       alert("Conversion failed. Please try again.");
@@ -49,246 +73,66 @@ export default function ImageConverterClient() {
     a.remove();
   }
 
-  function handleReset() {
-    setConvertedImageUrl(null);
-    setConvertedFileName("");
-    setFile(null);
-  }
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Convert Image Format</h3>
-          
-          <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Image File
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => {
-                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">🖼️</div>
-                  <div className="text-gray-700">
-                    {file ? file.name : "Click to select image file"}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Supports: JPG, PNG, WEBP, SVG, GIF, BMP, TIFF
-                  </div>
-                </button>
-              </div>
-              
-              {file && (
-                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">🖼️</span>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{file.name}</div>
-                      <div className="text-sm text-gray-700">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
+        <div className="space-y-6">
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="🖼️"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
             </div>
+          )}
 
-            {/* Output Format Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Output Format
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {["png", "jpg", "webp", "svg"].map((fmt) => (
-                  <button
-                    key={fmt}
-                    type="button"
-                    onClick={() => setTarget(fmt as Target)}
-                    className={`px-4 py-3 rounded-xl text-sm font-medium border transition-all duration-200 ${
-                      target === fmt 
-                        ? "bg-gray-600 text-white border-gray-600" 
-                        : "bg-gray-200/50 text-gray-900 border-gray-300/50 hover:bg-gray-300/50 backdrop-blur-sm"
-                    }`}
-                  >
-                    {fmt.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Quality Settings */}
-            {target !== "svg" && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Quality: {quality}%
-                </label>
-                <input
-                  type="range"
-                  min={40}
-                  max={100}
-                  step={1}
-                  value={quality}
-                  onChange={(e) => setQuality(Number(e.target.value))}
-                  className="w-full h-3 bg-gray-300/50 rounded-lg appearance-none cursor-pointer"
-                />
-                <p className="text-xs text-gray-600 mt-1">Higher quality yields larger files</p>
-              </div>
-            )}
-
-            {/* Convert Button */}
+          {/* Convert Button - Only show after file upload and before conversion */}
+          {file && !convertedImageUrl && (
             <button
-              type="button"
               onClick={handleConvert}
-              disabled={isDisabled}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+              disabled={isLoading}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
             >
-              {isLoading ? "Converting…" : "Convert Image"}
+              <span className="flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting Image...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Convert Image
+                  </>
+                )}
+              </span>
             </button>
-          </div>
-        </div>
+          )}
 
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
-          
-          {convertedImageUrl ? (
-            <div className="space-y-6">
-              {/* Converted Image Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Converted Image Preview</h4>
-                <div className="flex justify-center">
-                  <img
-                    src={convertedImageUrl}
-                    alt="Converted Preview"
-                    className="max-w-full max-h-64 rounded-lg shadow-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Download Section */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Download Converted Image</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-300/50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">📁</span>
-                      <div>
-                        <div className="font-medium text-gray-900">{convertedFileName}</div>
-                        <div className="text-sm text-gray-700">Format: {target.toUpperCase()}</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={handleDownload}
-                      className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
-                    >
-                      📥 Download Image
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
-                    >
-                      🔄 Convert Another
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Original Format:</span>
-                    <div className="font-medium text-gray-900">{file?.name.split('.').pop()?.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Converted Format:</span>
-                    <div className="font-medium text-gray-900">{target.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Original Size:</span>
-                    <div className="font-medium text-gray-900">{file ? (file.size / (1024 * 1024)).toFixed(2) : '0'} MB</div>
-                  </div>
-                  {target !== "svg" && (
-                    <div>
-                      <span className="text-gray-700">Quality Used:</span>
-                      <div className="font-medium text-gray-900">{quality}%</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : file ? (
-            <div className="space-y-6">
-              {/* Original Image Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Original Image Preview</h4>
-                <div className="flex justify-center">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt="Original Preview"
-                    className="max-w-full max-h-64 rounded-lg shadow-lg"
-                  />
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Original Format:</span>
-                    <div className="font-medium text-gray-900">{file.name.split('.').pop()?.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Target Format:</span>
-                    <div className="font-medium text-gray-900">{target.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">File Size:</span>
-                    <div className="font-medium text-gray-900">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-                  </div>
-                  {target !== "svg" && (
-                    <div>
-                      <span className="text-gray-700">Quality:</span>
-                      <div className="font-medium text-gray-900">{quality}%</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Ready to Convert */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-                <div className="text-6xl mb-4">🖼️</div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-                <p className="text-gray-700">
-                  Your image is ready to be converted to {target.toUpperCase()} format.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">🖼️</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-700">
-                Select an image file and choose your target format to start conversion.
-              </p>
-            </div>
+          {/* Download Button - Only show after conversion */}
+          {convertedImageUrl && (
+            <button
+              onClick={handleDownload}
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Image
+              </span>
+            </button>
           )}
         </div>
       </div>

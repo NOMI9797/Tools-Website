@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import FileUpload from '@/components/FileUpload';
 
 export default function GifToMp4Client() {
   const [ffmpeg, setFFmpeg] = useState<any>(null);
@@ -11,6 +12,29 @@ export default function GifToMp4Client() {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Loading FFmpeg...");
+  const [error, setError] = useState<string | null>(null);
+
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const ALLOWED_MIME_TYPES = ['image/gif'];
+  const ALLOWED_EXTENSIONS = ['gif'];
+
+  const resetState = () => {
+    setGif(null);
+    setMp4Url(null);
+    setConvertedFileName('');
+    setError(null);
+  };
+
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setGif(selectedFile);
+      setError(null);
+      setMp4Url(null);
+      setConvertedFileName('');
+    } else {
+      resetState();
+    }
+  };
 
   useEffect(() => {
     const loadFFmpeg = async () => {
@@ -40,24 +64,6 @@ export default function GifToMp4Client() {
     loadFFmpeg();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.name.toLowerCase().endsWith('.gif')) {
-      alert('Please upload a .gif file');
-      return;
-    }
-    
-    // Check file size (limit to 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      alert("File too large. Please select a GIF file smaller than 50MB.");
-      return;
-    }
-    
-    setGif(file);
-    setMp4Url(null);
-    setConvertedFileName("");
-  };
 
   const handleConvert = useCallback(async () => {
     if (!gif) return;
@@ -122,11 +128,6 @@ export default function GifToMp4Client() {
     document.body.removeChild(a);
   }, [mp4Url, convertedFileName]);
 
-  const handleReset = useCallback(() => {
-    setGif(null);
-    setMp4Url(null);
-    setConvertedFileName("");
-  }, []);
 
   if (!ready) {
     return (
@@ -142,231 +143,91 @@ export default function GifToMp4Client() {
   }
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Upload GIF File</h3>
-          
-          <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select GIF File
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/gif"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => {
-                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">🎞️</div>
-                  <div className="text-gray-700">
-                    {gif ? gif.name : "Click to select GIF file"}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Supports: GIF format only (max 50MB)
-                  </div>
-                </button>
-              </div>
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
+        <div className="space-y-6">
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="🎞️"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
             </div>
+          )}
 
-            {/* Convert Button */}
-            <button
-              onClick={handleConvert}
-              disabled={!gif || isLoading}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
-            >
-              {isLoading ? "Converting…" : "Convert to MP4"}
-            </button>
-
-            {/* File Information */}
-            {gif && (
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Selected GIF File</h4>
-                <div className="flex items-center space-x-3 p-3 bg-gray-300/50 rounded-lg">
-                  <span className="text-2xl">🎞️</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate">{gif.name}</div>
-                    <div className="text-sm text-gray-700">
-                      {(gif.size / (1024 * 1024)).toFixed(2)} MB • {gif.type}
-                    </div>
-                  </div>
+          {/* Progress Bar */}
+          {isLoading && (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
+              <h4 className="font-semibold text-gray-900 mb-3">Converting GIF</h4>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-700">Processing...</span>
+                  <span className="text-sm font-medium text-gray-900">{progress}%</span>
                 </div>
-              </div>
-            )}
-
-            {/* Progress Bar */}
-            {isLoading && (
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Converting GIF</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Processing...</span>
-                    <span className="text-sm font-medium text-gray-900">{progress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-300/50 rounded-full h-3">
-                    <div 
-                      className="bg-gradient-to-r from-gray-600 to-gray-700 h-3 rounded-full transition-all duration-300" 
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-600">
-                    Converting GIF to MP4 video with optimized settings...
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
-          
-          {mp4Url ? (
-            <div className="space-y-6">
-              {/* MP4 Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Generated MP4</h4>
-                <div className="rounded-lg overflow-hidden border border-gray-300/50">
-                  <video 
-                    src={mp4Url} 
-                    controls 
-                    className="w-full h-auto"
-                    preload="metadata"
+                <div className="w-full bg-gray-300/50 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-gray-600 to-gray-700 h-3 rounded-full transition-all duration-300" 
+                    style={{ width: `${progress}%` }}
                   />
                 </div>
-              </div>
-
-              {/* Download Section */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Download MP4</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-300/50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">🎬</span>
-                      <div>
-                        <div className="font-medium text-gray-900">{convertedFileName}</div>
-                        <div className="text-sm text-gray-700">Format: MP4</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={handleDownload}
-                      className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
-                    >
-                      📥 Download MP4
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
-                    >
-                      🔄 Convert Another
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Conversion Details */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Source Format:</span>
-                    <div className="font-medium text-gray-900">GIF</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Output Format:</span>
-                    <div className="font-medium text-gray-900">MP4</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Quality:</span>
-                    <div className="font-medium text-gray-900">High Quality</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Compatibility:</span>
-                    <div className="font-medium text-gray-900">Universal</div>
-                  </div>
-                </div>
-                <div className="mt-3 p-3 bg-gray-300/50 rounded-lg">
-                  <p className="text-xs text-gray-700">
-                    High-quality MP4 video created with optimized encoding. 
-                    Uses server-side FFmpeg when available, falls back to client-side processing.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : gif ? (
-            <div className="space-y-6">
-              {/* GIF Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">GIF Preview</h4>
-                <div className="rounded-lg overflow-hidden border border-gray-300/50">
-                  <img 
-                    src={URL.createObjectURL(gif)} 
-                    alt="GIF Preview"
-                    className="w-full h-auto"
-                  />
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Format:</span>
-                    <div className="font-medium text-gray-900">GIF</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Target Format:</span>
-                    <div className="font-medium text-gray-900">MP4</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">File Size:</span>
-                    <div className="font-medium text-gray-900">
-                      {(gif.size / (1024 * 1024)).toFixed(2)} MB
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Type:</span>
-                    <div className="font-medium text-gray-900">{gif.type}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ready to Convert */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-                <div className="text-6xl mb-4">🎞️</div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-                <p className="text-gray-700">
-                  Your GIF is ready to be converted to an MP4 video.
+                <p className="text-xs text-gray-600">
+                  Converting GIF to MP4 video with optimized settings...
                 </p>
               </div>
             </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">🎞️</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-700">
-                Select a GIF file to start converting it to an MP4 video.
-              </p>
-            </div>
+          )}
+
+          {/* Convert Button - Only show after file upload and before conversion */}
+          {gif && !mp4Url && (
+            <button
+              onClick={handleConvert}
+              disabled={isLoading}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting to MP4...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Convert to MP4
+                  </>
+                )}
+              </span>
+            </button>
+          )}
+
+          {/* Download Button - Only show after conversion */}
+          {mp4Url && (
+            <button
+              onClick={handleDownload}
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download MP4 File
+              </span>
+            </button>
           )}
         </div>
       </div>
     </div>
+
   );
 }
 

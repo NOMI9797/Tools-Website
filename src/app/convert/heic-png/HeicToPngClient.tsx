@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import FileUpload from '@/components/FileUpload';
 
 export default function HeicToPngClient() {
   const [file, setFile] = useState<File | null>(null);
@@ -8,30 +9,33 @@ export default function HeicToPngClient() {
   const [convertedImage, setConvertedImage] = useState<string | null>(null);
   const [convertedFileName, setConvertedFileName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const ALLOWED_MIME_TYPES = ['image/heic', 'image/heif'];
+  const ALLOWED_EXTENSIONS = ['heic', 'heif'];
 
-    // Validate file type
-    if (!file.name.toLowerCase().endsWith('.heic')) {
-      alert('Please select a HEIC image file (.heic extension)');
-      return;
-    }
-
-    // Check file size (limit to 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File too large. Please select a file smaller than 10MB.');
-      return;
-    }
-
-    setFile(file);
-    // Reset converted image
-    setConvertedImage(null);
-    setConvertedFileName("");
-    // For HEIC files, we can't create a preview directly in the browser
+  const resetState = () => {
+    setFile(null);
     setPreview(null);
-  }, []);
+    setConvertedImage(null);
+    setConvertedFileName('');
+    setError(null);
+  };
+
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setFile(selectedFile);
+      setError(null);
+      setConvertedImage(null);
+      setConvertedFileName('');
+      // For HEIC files, we can't create a preview directly in the browser
+      setPreview(null);
+    } else {
+      resetState();
+    }
+  };
+
 
   const handleConvert = async () => {
     if (!file) return;
@@ -77,194 +81,66 @@ export default function HeicToPngClient() {
     document.body.removeChild(link);
   }, [convertedImage, convertedFileName]);
 
-  const handleReset = useCallback(() => {
-    setFile(null);
-    setPreview(null);
-    setConvertedImage(null);
-    setConvertedFileName("");
-  }, []);
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Convert HEIC to PNG</h3>
-          
-          <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select HEIC File
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept=".heic"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => {
-                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">📱</div>
-                  <div className="text-gray-700">
-                    {file ? file.name : "Click to select HEIC file"}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Supports: HEIC format only (.heic extension)
-                  </div>
-                </button>
-              </div>
-              
-              {file && (
-                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">📱</span>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{file.name}</div>
-                      <div className="text-sm text-gray-700">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
+        <div className="space-y-6">
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="📱"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
 
-            {/* Convert Button */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
+          {/* Convert Button - Only show after file upload and before conversion */}
+          {file && !convertedImage && (
             <button
               onClick={handleConvert}
-              disabled={!file || isLoading}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+              disabled={isLoading}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
             >
-              {isLoading ? "Converting…" : "Convert to PNG"}
+              <span className="flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting to PNG...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Convert to PNG
+                  </>
+                )}
+              </span>
             </button>
-          </div>
-        </div>
+          )}
 
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
-          
-          {convertedImage ? (
-            <div className="space-y-6">
-              {/* Converted Image Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Converted PNG Preview</h4>
-                <div className="flex justify-center">
-                  <img
-                    src={convertedImage}
-                    alt="Converted Preview"
-                    className="max-w-full max-h-64 rounded-lg shadow-lg"
-                  />
-                </div>
-              </div>
-
-              {/* Download Section */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Download Converted PNG</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-300/50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">📁</span>
-                      <div>
-                        <div className="font-medium text-gray-900">{convertedFileName}</div>
-                        <div className="text-sm text-gray-700">Format: PNG</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={handleDownload}
-                      className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
-                    >
-                      📥 Download PNG
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
-                    >
-                      🔄 Convert Another
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Original Format:</span>
-                    <div className="font-medium text-gray-900">HEIC</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Converted Format:</span>
-                    <div className="font-medium text-gray-900">PNG</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Original Size:</span>
-                    <div className="font-medium text-gray-900">{file ? (file.size / (1024 * 1024)).toFixed(2) : '0'} MB</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Quality:</span>
-                    <div className="font-medium text-gray-900">Lossless</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : file ? (
-            <div className="space-y-6">
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Format:</span>
-                    <div className="font-medium text-gray-900">HEIC</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Target Format:</span>
-                    <div className="font-medium text-gray-900">PNG</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">File Size:</span>
-                    <div className="font-medium text-gray-900">{file ? (file.size / (1024 * 1024)).toFixed(2) : '0'} MB</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Quality:</span>
-                    <div className="font-medium text-gray-900">Lossless</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ready to Convert */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-                <div className="text-6xl mb-4">📱</div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-                <p className="text-gray-700">
-                  Your HEIC image is ready to be converted to PNG format.
-                </p>
-                <p className="text-sm text-gray-600 mt-2">
-                  Note: HEIC files cannot be previewed in the browser, but conversion will work perfectly.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">📱</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-700">
-                Select a HEIC image file to start conversion to PNG format.
-              </p>
-              <p className="text-sm text-gray-600 mt-2">
-                Perfect for converting iPhone photos to widely compatible PNG format with transparency support.
-              </p>
-            </div>
+          {/* Download Button - Only show after conversion */}
+          {convertedImage && (
+            <button
+              onClick={handleDownload}
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download PNG File
+              </span>
+            </button>
           )}
         </div>
       </div>

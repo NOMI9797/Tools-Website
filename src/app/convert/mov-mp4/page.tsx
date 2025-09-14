@@ -3,7 +3,7 @@ import MovToMp4Client from './MovToMp4Client';
 
 export const metadata: Metadata = {
   title: 'MOV to MP4 Converter - Convert MOV Videos to MP4 Online | Free Tool',
-  description: 'Convert MOV videos to MP4 format online for free. High-quality conversion with customizable settings. Support for QuickTime MOV files.',
+  description: 'Convert MOV videos to MP4 format with customizable quality settings and bitrate options.',
   keywords: 'mov to mp4, convert mov to mp4, mov converter, quicktime to mp4, mov mp4 converter, video converter',
   openGraph: {
     title: 'MOV to MP4 Converter - Convert MOV Videos to MP4 Online',
@@ -23,15 +23,14 @@ export const metadata: Metadata = {
 export default function MovToMp4Page() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 pt-16 pb-6">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-6">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               MOV to MP4 Converter
             </h1>
             <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-              Convert your MOV (QuickTime) videos to MP4 format for better compatibility. 
-              High-quality conversion with customizable settings.
+              Convert MOV videos to MP4 format with customizable quality settings and bitrate options.
             </p>
           </div>
           

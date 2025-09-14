@@ -1,38 +1,37 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import FileUpload from '@/components/FileUpload';
 
 export default function JpgToPdfClient() {
   const [files, setFiles] = useState<File[]>([]);
   const [convertedPdf, setConvertedPdf] = useState<string | null>(null);
   const [convertedFileName, setConvertedFileName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = Array.from(e.target.files || []);
-    
-    // Validate file types
-    const invalidFiles = selectedFiles.filter(
-      file => !file.type.startsWith('image/jpeg') && !file.name.toLowerCase().match(/\.(jpg|jpeg)$/)
-    );
-    
-    if (invalidFiles.length > 0) {
-      alert('Please select only JPG/JPEG image files');
-      return;
-    }
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const ALLOWED_MIME_TYPES = ['image/jpeg'];
+  const ALLOWED_EXTENSIONS = ['jpg', 'jpeg'];
 
-    // Check file sizes (limit to 10MB per file)
-    const oversizedFiles = selectedFiles.filter(file => file.size > 10 * 1024 * 1024);
-    if (oversizedFiles.length > 0) {
-      alert(`Some files are too large. Please select files smaller than 10MB each.`);
-      return;
-    }
-
-    setFiles(selectedFiles);
-    // Reset converted PDF
+  const resetState = () => {
+    setFiles([]);
     setConvertedPdf(null);
-    setConvertedFileName("");
-  }, []);
+    setConvertedFileName('');
+    setError(null);
+  };
+
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setFiles([selectedFile]);
+      setError(null);
+      setConvertedPdf(null);
+      setConvertedFileName('');
+    } else {
+      resetState();
+    }
+  };
+
 
   const handleConvert = async () => {
     if (files.length === 0) return;
@@ -82,237 +81,66 @@ export default function JpgToPdfClient() {
     document.body.removeChild(link);
   }, [convertedPdf, convertedFileName]);
 
-  const handleReset = useCallback(() => {
-    setFiles([]);
-    setConvertedPdf(null);
-    setConvertedFileName("");
-  }, []);
-
-  const removeFile = useCallback((index: number) => {
-    setFiles(prev => prev.filter((_, i) => i !== index));
-    setConvertedPdf(null);
-    setConvertedFileName("");
-  }, []);
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Upload JPG Images</h3>
-          
-          <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select JPG Files
-              </label>
-              <div className="relative">
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,image/jpeg"
-                  onChange={handleFileChange}
-                  multiple
-                  className="hidden"
-                />
-                <button
-                  onClick={() => {
-                    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
-                    input?.click();
-                  }}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">📷</div>
-                  <div className="text-gray-700">
-                    {files.length > 0 ? `${files.length} JPG file(s) selected` : "Click to select JPG files"}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Supports: JPG/JPEG format only (max 10MB each)
-                  </div>
-                </button>
-              </div>
-            </div>
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
+        <div className="space-y-6">
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="📷"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
 
-            {/* Convert Button */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
+          {/* Convert Button - Only show after file upload and before conversion */}
+          {files.length > 0 && !convertedPdf && (
             <button
               onClick={handleConvert}
-              disabled={files.length === 0 || isLoading}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+              disabled={isLoading}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
             >
-              {isLoading ? "Converting…" : "Convert to PDF"}
+              <span className="flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting to PDF...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Convert to PDF
+                  </>
+                )}
+              </span>
             </button>
+          )}
 
-            {/* File Information */}
-            {files.length > 0 && (
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Selected JPG Files ({files.length})</h4>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-2 bg-gray-300/50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-lg">📷</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-gray-900 truncate">{file.name}</div>
-                          <div className="text-sm text-gray-700">{(file.size / (1024 * 1024)).toFixed(2)} MB</div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeFile(index)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
-          
-          {convertedPdf ? (
-            <div className="space-y-6">
-              {/* PDF Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Generated PDF</h4>
-                <div className="flex justify-center">
-                  <div className="bg-white/50 rounded-lg p-8 border border-gray-300/50">
-                    <div className="text-6xl mb-3">📄</div>
-                    <div className="text-center">
-                      <div className="font-medium text-gray-900">{convertedFileName}</div>
-                      <div className="text-sm text-gray-700">{files.length} page(s)</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Download Section */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-4">Download PDF</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-3 bg-gray-300/50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">📁</span>
-                      <div>
-                        <div className="font-medium text-gray-900">{convertedFileName}</div>
-                        <div className="text-sm text-gray-700">Format: PDF</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-3">
-                    <button
-                      onClick={handleDownload}
-                      className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-4 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold"
-                    >
-                      📥 Download PDF
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="px-4 py-3 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50"
-                    >
-                      🔄 Convert Another
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Conversion Details */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Conversion Details</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Source Format:</span>
-                    <div className="font-medium text-gray-900">JPG/JPEG</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Output Format:</span>
-                    <div className="font-medium text-gray-900">PDF</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Images Combined:</span>
-                    <div className="font-medium text-gray-900">{files.length}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Quality:</span>
-                    <div className="font-medium text-gray-900">High Quality</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : files.length > 0 ? (
-            <div className="space-y-6">
-              {/* Images Preview */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Selected Images Preview</h4>
-                <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto">
-                  {files.map((file, index) => {
-                    const url = URL.createObjectURL(file);
-                    return (
-                      <div key={index} className="bg-white/50 rounded-lg overflow-hidden border border-gray-300/50">
-                        <img 
-                          src={url} 
-                          alt={file.name} 
-                          className="h-20 w-full object-cover" 
-                          onLoad={() => URL.revokeObjectURL(url)}
-                        />
-                        <div className="p-2">
-                          <p className="text-xs font-medium text-gray-900 truncate" title={file.name}>
-                            {file.name}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Format:</span>
-                    <div className="font-medium text-gray-900">JPG/JPEG</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Target Format:</span>
-                    <div className="font-medium text-gray-900">PDF</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Files Selected:</span>
-                    <div className="font-medium text-gray-900">{files.length}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Total Size:</span>
-                    <div className="font-medium text-gray-900">
-                      {(files.reduce((acc, file) => acc + file.size, 0) / (1024 * 1024)).toFixed(2)} MB
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ready to Convert */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-                <div className="text-6xl mb-4">📷</div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-                <p className="text-gray-700">
-                  Your {files.length} JPG image{files.length > 1 ? 's are' : ' is'} ready to be combined into a PDF.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">📷</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-700">
-                Select JPG image files to start combining them into a PDF document.
-              </p>
-            </div>
+          {/* Download Button - Only show after conversion */}
+          {convertedPdf && (
+            <button
+              onClick={handleDownload}
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download PDF File
+              </span>
+            </button>
           )}
         </div>
       </div>

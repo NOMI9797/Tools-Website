@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import type { FFmpeg } from '@ffmpeg/ffmpeg';
+import FileUpload from '@/components/FileUpload';
 
 interface ConversionSettings {
   quality: 'high' | 'medium' | 'low';
@@ -30,7 +31,29 @@ export default function MovToMp4Client() {
   });
   
   const ffmpegRef = useRef<FFmpeg | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+  const ALLOWED_MIME_TYPES = [
+    'video/quicktime', 'video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm',
+    'video/mkv', 'video/3gp', 'video/ogv', 'video/m4v'
+  ];
+  const ALLOWED_EXTENSIONS = ['mov', 'qt', 'mp4', 'avi', 'wmv', 'flv', 'webm', 'mkv', '3gp', 'ogv', 'm4v'];
+
+  const resetState = () => {
+    setFile(null);
+    setConvertedFile(null);
+    setError(null);
+  };
+
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setFile(selectedFile);
+      setError(null);
+      setConvertedFile(null);
+    } else {
+      resetState();
+    }
+  };
 
   // Load FFmpeg
   useEffect(() => {
@@ -65,30 +88,6 @@ export default function MovToMp4Client() {
     loadFFmpeg();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Validate file type - specifically for MOV files
-      const validTypes = [
-        'video/quicktime',
-        'video/x-quicktime',
-        'video/mov',
-        'video/mp4' // Some MOV files might be detected as MP4
-      ];
-      
-      const validExtensions = ['.mov', '.qt'];
-      const fileExtension = selectedFile.name.toLowerCase().substring(selectedFile.name.lastIndexOf('.'));
-      
-      if (!validTypes.includes(selectedFile.type) && !validExtensions.includes(fileExtension)) {
-        setError('Please select a valid MOV (QuickTime) file');
-        return;
-      }
-      
-      setFile(selectedFile);
-      setError(null);
-      setConvertedFile(null);
-    }
-  };
 
   const handleConvert = async () => {
     if (!file || !ffmpegLoaded || !ffmpegRef.current) return;
@@ -227,186 +226,50 @@ export default function MovToMp4Client() {
     }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const getQualityDescription = (quality: string) => {
-    const descriptions: Record<string, string> = {
-      'high': 'High quality (larger file)',
-      'medium': 'Medium quality (balanced)',
-      'low': 'Low quality (smaller file)'
-    };
-    return descriptions[quality] || quality;
-  };
-
-  const getResolutionDescription = (resolution: string) => {
-    const descriptions: Record<string, string> = {
-      'original': 'Keep original resolution',
-      '1080p': 'Full HD (1920x1080)',
-      '720p': 'HD (1280x720)',
-      '480p': 'SD (854x480)',
-      '360p': 'Low (640x360)'
-    };
-    return descriptions[resolution] || resolution;
-  };
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Convert MOV to MP4</h3>
-          
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
           <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select MOV File
-              </label>
-              <div className="relative">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="video/quicktime,video/x-quicktime,.mov,.qt"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">🎬</div>
-                  <div className="text-gray-700">
-                    {file ? file.name : "Click to select MOV file"}
-                  </div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Supports: QuickTime MOV files (.mov, .qt)
-                  </div>
-                </button>
-              </div>
-              
-              {file && (
-                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">🎬</span>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900">{file.name}</div>
-                      <div className="text-sm text-gray-700">{formatFileSize(file.size)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="🎬"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
 
-            {/* Conversion Settings */}
-            {file && (
-              <div className="space-y-4">
-                <h4 className="text-md font-semibold text-gray-900">Conversion Settings</h4>
-                
-                {/* Quality */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Quality
-                  </label>
-                  <select
-                    value={settings.quality}
-                    onChange={(e) => setSettings({...settings, quality: e.target.value as any})}
-                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
-                  >
-                    <option value="high" className="bg-gray-200 text-gray-900">High Quality</option>
-                    <option value="medium" className="bg-gray-200 text-gray-900">Medium Quality</option>
-                    <option value="low" className="bg-gray-200 text-gray-900">Low Quality</option>
-                  </select>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {getQualityDescription(settings.quality)}
-                  </p>
-                </div>
-
-                {/* Resolution */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Resolution
-                  </label>
-                  <select
-                    value={settings.resolution}
-                    onChange={(e) => setSettings({...settings, resolution: e.target.value as any})}
-                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
-                  >
-                    <option value="original" className="bg-gray-200 text-gray-900">Original Resolution</option>
-                    <option value="1080p" className="bg-gray-200 text-gray-900">1080p (Full HD)</option>
-                    <option value="720p" className="bg-gray-200 text-gray-900">720p (HD)</option>
-                    <option value="480p" className="bg-gray-200 text-gray-900">480p (SD)</option>
-                    <option value="360p" className="bg-gray-200 text-gray-900">360p (Low)</option>
-                  </select>
-                  <p className="text-xs text-gray-600 mt-1">
-                    {getResolutionDescription(settings.resolution)}
-                  </p>
-                </div>
-
-                {/* FPS */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Frame Rate
-                  </label>
-                  <select
-                    value={settings.fps}
-                    onChange={(e) => setSettings({...settings, fps: e.target.value as any})}
-                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
-                  >
-                    <option value="original" className="bg-gray-200 text-gray-900">Original FPS</option>
-                    <option value="60" className="bg-gray-200 text-gray-900">60 FPS</option>
-                    <option value="30" className="bg-gray-200 text-gray-900">30 FPS</option>
-                    <option value="24" className="bg-gray-200 text-gray-900">24 FPS</option>
-                    <option value="15" className="bg-gray-200 text-gray-900">15 FPS</option>
-                  </select>
-                </div>
-
-                {/* Video Codec */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Video Codec
-                  </label>
-                  <select
-                    value={settings.videoCodec}
-                    onChange={(e) => setSettings({...settings, videoCodec: e.target.value as any})}
-                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
-                  >
-                    <option value="h264" className="bg-gray-200 text-gray-900">H.264 (Better compatibility)</option>
-                    <option value="h265" className="bg-gray-200 text-gray-900">H.265 (Better compression)</option>
-                  </select>
-                </div>
-
-                {/* Audio Codec */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Audio Codec
-                  </label>
-                  <select
-                    value={settings.audioCodec}
-                    onChange={(e) => setSettings({...settings, audioCodec: e.target.value as any})}
-                    className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
-                  >
-                    <option value="aac" className="bg-gray-200 text-gray-900">AAC (Recommended)</option>
-                    <option value="mp3" className="bg-gray-200 text-gray-900">MP3</option>
-                    <option value="copy" className="bg-gray-200 text-gray-900">Copy Original</option>
-                  </select>
-                </div>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
               </div>
             )}
 
-            {/* Convert Button */}
-            {file && (
+          {/* Convert Button - Only show after file upload and before conversion */}
+          {file && !convertedFile && (
               <button
                 onClick={handleConvert}
-                disabled={isLoading || !ffmpegLoaded}
-                className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
-              >
-                {isLoading ? `Converting... ${progress}%` : 'Convert MOV to MP4'}
+              disabled={isLoading}
+              className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Converting to MP4...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Convert to MP4
+                  </>
+                )}
+              </span>
               </button>
             )}
 
@@ -420,113 +283,22 @@ export default function MovToMp4Client() {
               </div>
             )}
 
-            {/* Error Display */}
-            {error && (
-              <div className="bg-red-100 border border-red-300 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Conversion Result</h3>
-          
-          {convertedFile ? (
-            <div className="space-y-6">
-              {/* Success Message */}
-              <div className="bg-green-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <span className="text-green-600 text-xl">✅</span>
-                  <span className="text-green-700 font-medium">MOV to MP4 Conversion Successful!</span>
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">File Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-700">Original Size:</span>
-                    <div className="font-medium text-gray-900">{formatFileSize(file?.size || 0)}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Converted Size:</span>
-                    <div className="font-medium text-gray-900">{formatFileSize(convertedFile.size)}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Size Change:</span>
-                    <div className={`font-medium ${convertedFile.size < (file?.size || 0) ? 'text-green-600' : 'text-red-600'}`}>
-                      {((convertedFile.size - (file?.size || 0)) / (file?.size || 1) * 100).toFixed(1)}%
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Format:</span>
-                    <div className="font-medium text-gray-900">MP4</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Settings Used */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Settings Used</h4>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div>
-                    <span className="text-gray-700">Quality:</span>
-                    <div className="font-medium text-gray-900 capitalize">{settings.quality}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Resolution:</span>
-                    <div className="font-medium text-gray-900">{settings.resolution}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Frame Rate:</span>
-                    <div className="font-medium text-gray-900">{settings.fps}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Video Codec:</span>
-                    <div className="font-medium text-gray-900">{settings.videoCodec.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Audio Codec:</span>
-                    <div className="font-medium text-gray-900">{settings.audioCodec.toUpperCase()}</div>
-                  </div>
-                  <div>
-                    <span className="text-gray-700">Bitrate:</span>
-                    <div className="font-medium text-gray-900">{settings.bitrate}</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Download Button */}
+          {/* Download Button - Only show after conversion */}
+          {convertedFile && (
               <button
                 onClick={handleDownload}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-green-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
-              >
-                <span>📥</span>
-                <span>Download MP4</span>
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl relative z-10"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download MP4 File
+              </span>
               </button>
-            </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">🎬</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Convert</h4>
-              <p className="text-gray-700">
-                Select a MOV file and configure your settings to convert to MP4 format.
-              </p>
-            </div>
           )}
         </div>
       </div>
-
-      {/* Loading Status */}
-      {!ffmpegLoaded && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto mb-4"></div>
-          <p className="text-gray-700">Loading video converter...</p>
-        </div>
-      )}
     </div>
   );
 }
