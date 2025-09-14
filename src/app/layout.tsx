@@ -82,7 +82,7 @@ export default function RootLayout({
                     </span>
                     <div className="absolute inset-0 bg-white/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute left-0 top-full mt-3 w-[800px] rounded-2xl border border-gray-700/30 bg-gray-900/95 backdrop-blur-md shadow-2xl p-6">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute left-0 top-full mt-3 w-[800px] rounded-2xl border border-gray-700/30 bg-gray-900 shadow-2xl p-6 z-[99999]">
                     <div className="grid grid-cols-3 gap-2">
                       {/* Video & Audio */}
                       <div className="space-y-1">
@@ -215,7 +215,7 @@ export default function RootLayout({
                     </span>
                     <div className="absolute inset-0 bg-white/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute left-0 top-full mt-3 w-[650px] rounded-2xl border border-gray-700/30 bg-gray-900/95 backdrop-blur-md shadow-2xl p-6">
+                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute left-0 top-full mt-3 w-[650px] rounded-2xl border border-gray-700/30 bg-gray-900 shadow-2xl p-6 z-[99999]">
                     <div className="grid grid-cols-2 gap-2">
                       {/* Video & Audio */}
                       <div className="space-y-1">
