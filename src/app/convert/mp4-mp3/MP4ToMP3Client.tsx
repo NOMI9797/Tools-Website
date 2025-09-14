@@ -1,639 +1,280 @@
-"use client";
+'use client';
 
-import { useState, useCallback, useRef, useEffect } from "react";
-
-type MP3Quality = {
-  id: string;
-  name: string;
-  bitrate: string;
-  description: string;
-};
-
-const mp3Qualities: MP3Quality[] = [
-  {
-    id: "320",
-    name: "320 kbps",
-    bitrate: "320k",
-    description: "Highest quality - CD quality audio"
-  },
-  {
-    id: "256",
-    name: "256 kbps",
-    bitrate: "256k",
-    description: "Very high quality - Near CD quality"
-  },
-  {
-    id: "192",
-    name: "192 kbps",
-    bitrate: "192k",
-    description: "High quality - Good for most uses"
-  },
-  {
-    id: "160",
-    name: "160 kbps",
-    bitrate: "160k",
-    description: "Good quality - Balanced size and quality"
-  },
-  {
-    id: "128",
-    name: "128 kbps",
-    bitrate: "128k",
-    description: "Standard quality - Most common bitrate"
-  },
-  {
-    id: "96",
-    name: "96 kbps",
-    bitrate: "96k",
-    description: "Lower quality - Smaller file size"
-  }
-];
-
-const supportedVideoFormats = [
-  "mp4", "mov", "avi", "mkv", "webm", "flv", "wmv", "m4v", "3gp", "ogv"
-];
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import FileUpload from '@/components/FileUpload';
 
 export default function MP4ToMP3Client() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [quality, setQuality] = useState("192");
-  const [startTime, setStartTime] = useState("0");
-  const [duration, setDuration] = useState("");
-  const [normalize, setNormalize] = useState(false);
-  const [isConverting, setIsConverting] = useState(false);
-  const [conversionResult, setConversionResult] = useState<any>(null);
-  const [error, setError] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [ffmpeg, setFfmpeg] = useState<any>(null);
-  const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Loading audio converter...");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const ffmpegRef = useRef<FFmpeg | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [convertedAudioUrl, setConvertedAudioUrl] = useState<string | null>(null);
+  const [convertedFileName, setConvertedFileName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isFFmpegLoaded, setIsFFmpegLoaded] = useState(false);
 
-  // Load FFmpeg dynamically on client side only
+  const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB with server-side fallback
+  const supportedVideoFormats = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mkv', 'm4v', '3gp'];
+  const ALLOWED_MIME_TYPES = [
+    'video/mp4', 'video/avi', 'video/quicktime', 'video/x-ms-wmv', 'video/x-flv',
+    'video/webm', 'video/x-matroska', 'video/x-m4v', 'video/3gpp'
+  ];
+
+  // Load FFmpeg
   useEffect(() => {
     const loadFFmpeg = async () => {
       try {
-        setLoadingMessage("Loading FFmpeg...");
+        // Only initialize FFmpeg on client side
+        if (typeof window === 'undefined') return;
         
-        // Dynamic imports to avoid SSR issues
-        const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-        const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
+        const ffmpeg = new FFmpeg();
+        ffmpegRef.current = ffmpeg;
         
-        const ffmpegInstance = new FFmpeg();
-        
-        ffmpegInstance.on("log", ({ message }) => console.log(message));
-        ffmpegInstance.on("progress", ({ progress }) =>
-          setProgress(Math.round(progress * 100))
-        );
-
+        // Load FFmpeg
         const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-        await ffmpegInstance.load({
-          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+        ffmpeg.on('log', ({ message }) => {
+          console.log('FFmpeg log:', message);
         });
         
-        setFfmpeg(ffmpegInstance);
-        setFfmpegLoaded(true);
-        setLoadingMessage("Audio converter ready!");
+        await ffmpeg.load({
+          coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+          wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        });
+        
+        setIsFFmpegLoaded(true);
         console.log('FFmpeg loaded successfully');
-      } catch (err) {
-        console.error("FFmpeg failed to load:", err);
-        setError("Failed to load audio converter. Please refresh the page.");
+      } catch (error) {
+        console.error('Failed to load FFmpeg:', error);
+        setError('Failed to load video converter. Please refresh the page and try again.');
       }
     };
 
     loadFFmpeg();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      if (!supportedVideoFormats.includes(fileExtension || '')) {
-        setError(`Unsupported video format: ${fileExtension}. Please select a supported video file.`);
-        setSelectedFile(null);
-        return;
-      }
+  const resetState = () => {
+    setFile(null);
+    setConvertedAudioUrl(null);
+    setConvertedFileName('');
+    setError(null);
+  };
 
-      setSelectedFile(file);
-      setError("");
-      setConversionResult(null);
+  const handleFileChange = (selectedFile: File | null) => {
+    if (selectedFile) {
+      setFile(selectedFile);
+      setError(null);
+      setConvertedAudioUrl(null);
+      setConvertedFileName('');
+    } else {
+      resetState();
     }
   };
 
   const handleConvert = useCallback(async () => {
-    if (!selectedFile) {
-      setError("Please select a video file to convert");
+    if (!file) {
+      setError('Please upload a video file first.');
       return;
     }
 
-    setIsConverting(true);
-    setError("");
-    setProgress(0);
+    setIsLoading(true);
+    setError(null);
+    setConvertedAudioUrl(null);
 
+    // Try server-side conversion first for better reliability
     try {
-      // First try server-side conversion
-      try {
+      console.log('Attempting server-side conversion...');
+      
         const formData = new FormData();
-        formData.append("file", selectedFile);
-        formData.append("quality", quality);
-        formData.append("startTime", startTime);
-        formData.append("duration", duration);
-        formData.append("normalize", normalize.toString());
-
-        // Simulate progress
-        const progressInterval = setInterval(() => {
-          setProgress(prev => {
-            if (prev >= 90) return prev;
-            return prev + Math.random() * 10;
-          });
-        }, 200);
+      formData.append('file', file);
+      formData.append('quality', '192');
+      formData.append('startTime', '0');
+      formData.append('duration', '');
+      formData.append('normalize', 'true');
 
         const response = await fetch('/api/convert/mp4-mp3', {
           method: 'POST',
           body: formData,
         });
 
-        clearInterval(progressInterval);
-        setProgress(100);
-
         if (response.ok) {
           const result = await response.json();
-          setConversionResult(result);
-          return;
-        } else {
-          console.log('Server conversion failed, trying client-side fallback with FFmpeg.wasm');
+        
+        // Convert base64 to blob
+        const byteCharacters = atob(result.audioData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
         }
-      } catch (serverError) {
-        console.log('Server conversion failed, trying client-side fallback with FFmpeg.wasm');
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'audio/mpeg' });
+        
+        const url = URL.createObjectURL(blob);
+        setConvertedAudioUrl(url);
+        setConvertedFileName(result.fileName);
+        
+        console.log('Server-side conversion successful');
+        return;
       }
+    } catch (serverError) {
+      console.log('Server-side conversion failed, trying client-side...', serverError);
+    }
 
-      // Fallback to client-side conversion with FFmpeg.wasm
-      if (!ffmpegLoaded || !ffmpeg) {
-        throw new Error('FFmpeg not available. Please wait for it to load or refresh the page.');
+    // Fallback to client-side conversion
+    if (!isFFmpegLoaded) {
+      setError('Video converter is still loading. Please wait a moment and try again.');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const ffmpeg = ffmpegRef.current;
+      if (!ffmpeg) {
+        setError('FFmpeg not initialized. Please refresh the page and try again.');
+        setIsLoading(false);
+        return;
       }
-
-      setLoadingMessage("Converting with client-side FFmpeg...");
-      setProgress(0);
-
-      const { fetchFile } = await import("@ffmpeg/util");
-      const qualityData = mp3Qualities.find(q => q.id === quality);
       
-      if (!qualityData) {
-        throw new Error('Invalid quality setting');
-      }
+      const timestamp = Date.now();
+      const inputFileName = `input_${timestamp}.mp4`;
+      const outputFileName = `output_${timestamp}.mp3`;
 
-      // Write input file to FFmpeg filesystem
-      const inputFileName = `input.${selectedFile.name.split('.').pop()}`;
-      const outputFileName = 'output.mp3';
+      console.log('Starting client-side conversion...');
       
-      await ffmpeg.writeFile(inputFileName, await fetchFile(selectedFile));
+      // Write the file to FFmpeg's file system
+      console.log('Writing file to FFmpeg filesystem...');
+      const fileData = await fetchFile(file);
+      await ffmpeg.writeFile(inputFileName, fileData);
+      console.log('File written successfully');
 
-      // Build FFmpeg command for client-side conversion
-      let command = `-i ${inputFileName}`;
-      
-      // Add time parameters if specified
-      const startTimeSeconds = parseFloat(startTime) || 0;
-      if (startTimeSeconds > 0) {
-        command += ` -ss ${startTimeSeconds}`;
-      }
+      // Run FFmpeg command to extract audio
+      console.log('Running FFmpeg conversion...');
+      await ffmpeg.exec([
+        '-i', inputFileName,
+        '-vn', // No video
+        '-acodec', 'libmp3lame',
+        '-ab', '192k', // 192 kbps bitrate
+        '-ar', '44100', // Sample rate
+        '-ac', '2', // Stereo
+        '-y', // Overwrite output file
+        outputFileName
+      ]);
+      console.log('FFmpeg conversion completed');
 
-      const durationSeconds = parseFloat(duration) || 0;
-      if (durationSeconds > 0) {
-        command += ` -t ${durationSeconds}`;
-      }
-
-      // Add audio normalization if requested
-      if (normalize) {
-        command += ` -af loudnorm=I=-16:TP=-1.5:LRA=11`;
-      }
-
-      // Add MP3 encoding settings for client-side FFmpeg.wasm
-      command += ` -c:a libmp3lame -b:a ${qualityData.bitrate}`;
-      command += ` -ac 2`; // Force stereo output
-      command += ` -ar 44100`; // Set sample rate
-      command += ` -vn`; // Extract only audio (no video)
-      command += ` -f mp3`; // Force MP3 format
-      command += ` ${outputFileName}`;
-
-      console.log(`Executing FFmpeg command: ${command}`);
-
-      // Execute FFmpeg command
-      await ffmpeg.exec(command);
-
-      // Read the output file
+      // Read the result
+      console.log('Reading output file...');
       const data = await ffmpeg.readFile(outputFileName);
-      const base64Audio = Buffer.from(data).toString('base64');
+      const blob = new Blob([data], { type: 'audio/mpeg' });
+      
+      const url = URL.createObjectURL(blob);
+      setConvertedAudioUrl(url);
+      setConvertedFileName(`${file.name.split('.')[0]}.mp3`);
 
-      // Clean up FFmpeg filesystem
+      console.log('Client-side conversion successful');
+
+      // Clean up FFmpeg files
+      try {
       await ffmpeg.deleteFile(inputFileName);
       await ffmpeg.deleteFile(outputFileName);
+        console.log('Cleanup completed');
+      } catch (cleanupError) {
+        console.warn('Cleanup failed:', cleanupError);
+      }
 
-      // Create result object
-      const result = {
-        success: true,
-        originalFormat: selectedFile.name.split('.').pop()?.toUpperCase(),
-        targetFormat: "MP3",
-        originalSize: selectedFile.size,
-        convertedSize: data.byteLength,
-        quality: qualityData.name,
-        startTime: startTimeSeconds,
-        duration: durationSeconds || 0,
-        normalize: normalize,
-        audioData: base64Audio,
-        mimeType: "audio/mpeg",
-        fileName: `${selectedFile.name.split('.')[0]}.mp3`,
-        conversionMethod: "Client-side FFmpeg.wasm"
-      };
-
-      setConversionResult(result);
-      setProgress(100);
-
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Conversion failed');
+    } catch (err: any) {
+      console.error('Client-side conversion error:', err);
+      
+      // More specific error messages
+      if (err.message?.includes('FS error')) {
+        setError('File system error. Please try with a smaller file or a different video format.');
+      } else if (err.message?.includes('Invalid data')) {
+        setError('Invalid video file. Please check the file format and try again.');
+      } else if (err.message?.includes('No such file')) {
+        setError('File processing error. Please try again.');
+      } else {
+        setError('Conversion failed. Please try with a different file or refresh the page.');
+      }
     } finally {
-      setIsConverting(false);
-      setProgress(0);
+      setIsLoading(false);
     }
-  }, [selectedFile, quality, startTime, duration, normalize, ffmpeg, ffmpegLoaded]);
+  }, [file, isFFmpegLoaded]);
 
   const handleDownload = () => {
-    if (!conversionResult) return;
-
-    const byteCharacters = atob(conversionResult.audioData);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: conversionResult.mimeType });
-    
-    const url = URL.createObjectURL(blob);
+    if (convertedAudioUrl && convertedFileName) {
     const a = document.createElement('a');
-    a.href = url;
-    a.download = conversionResult.fileName;
+      a.href = convertedAudioUrl;
+      a.download = convertedFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatDuration = (seconds: number): string => {
-    if (!seconds) return 'Unknown';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const formatTimeInput = (timeStr: string): string => {
-    // Convert seconds to MM:SS format for display
-    const seconds = parseFloat(timeStr) || 0;
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const parseTimeInput = (timeStr: string): number => {
-    // Convert MM:SS format to seconds
-    if (timeStr.includes(':')) {
-      const parts = timeStr.split(':');
-      const mins = parseInt(parts[0]) || 0;
-      const secs = parseInt(parts[1]) || 0;
-      return mins * 60 + secs;
-    }
-    return parseFloat(timeStr) || 0;
-  };
-
-  const getFileIcon = (extension: string): string => {
-    switch (extension.toLowerCase()) {
-      case 'mp4': return '🎬';
-      case 'mov': return '🎥';
-      case 'avi': return '📹';
-      case 'mkv': return '🎞️';
-      case 'webm': return '🌐';
-      case 'flv': return '📺';
-      case 'wmv': return '🪟';
-      case 'm4v': return '🍎';
-      case '3gp': return '📱';
-      case 'ogv': return '🦉';
-      default: return '🎬';
     }
   };
+
 
   return (
-    <div className="bg-transparent">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Input Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Extract Audio from Video</h3>
-          
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-transparent p-8">
           <div className="space-y-6">
-            {/* File Upload */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-2">
-                Select Video File
-              </label>
-              <div className="relative">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".mp4,.mov,.avi,.mkv,.webm,.flv,.wmv,.m4v,.3gp,.ogv"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full px-4 py-6 border-2 border-dashed border-gray-300/50 rounded-xl hover:border-gray-500 hover:bg-gray-200/50 transition-all duration-200 text-center"
-                >
-                  <div className="text-4xl mb-2">🎬</div>
-                  <div className="text-gray-700">
-                    {selectedFile ? selectedFile.name : "Click to select video file"}
-                  </div>
-                  <div className="text-sm text-gray-700 mt-1">
-                    Supports: MP4, MOV, AVI, MKV, WEBM, FLV, WMV, M4V, 3GP, OGV
-                  </div>
-                </button>
-              </div>
-              
-              {selectedFile && (
-                <div className="mt-3 p-4 bg-gray-200/50 border border-gray-300/50 rounded-xl backdrop-blur-sm">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{getFileIcon(selectedFile.name.split('.').pop() || '')}</span>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-900 text-gray-900">{selectedFile.name}</div>
-                      <div className="text-sm text-gray-700">{formatFileSize(selectedFile.size)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* Upload Area */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="🎬"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={supportedVideoFormats}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
 
-            {/* Quality Settings */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-2">
-                MP3 Quality
-              </label>
-              <select
-                value={quality}
-                onChange={(e) => setQuality(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent backdrop-blur-sm"
-              >
-                {mp3Qualities.map((q) => (
-                  <option key={q.id} value={q.id} className="bg-gray-200 text-gray-900">
-                    {q.name} - {q.description}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Time Range Settings */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-3">
-                Time Range (Optional)
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-700 mb-1">
-                    Start Time (seconds or MM:SS)
-                  </label>
-                  <input
-                    type="text"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    placeholder="0 or 0:00"
-                    className="w-full px-3 py-2 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent text-sm backdrop-blur-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-700 mb-1">
-                    Duration (seconds or MM:SS)
-                  </label>
-                  <input
-                    type="text"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="Leave empty for full video"
-                    className="w-full px-3 py-2 border border-gray-300/50 bg-gray-200/50 text-gray-900 rounded-xl focus:ring-2 focus:ring-gray-600 focus:border-transparent text-sm backdrop-blur-sm"
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-gray-700 mt-2">
-                Leave duration empty to extract audio from start time to end of video
-              </p>
-            </div>
-
-            {/* Audio Processing Options */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 text-gray-700 mb-3">
-                Audio Processing
-              </label>
-              <label className="flex items-center space-x-3 p-4 border border-gray-300/50 bg-gray-200/50 rounded-xl hover:bg-gray-300/50 cursor-pointer transition-all duration-200 backdrop-blur-sm">
-                <input
-                  type="checkbox"
-                  checked={normalize}
-                  onChange={(e) => setNormalize(e.target.checked)}
-                  className="text-gray-700 focus:ring-gray-600"
-                />
-                <div>
-                  <div className="font-medium text-gray-900 text-gray-900">Audio Normalization</div>
-                  <div className="text-sm text-gray-700">Normalize audio levels for consistent volume</div>
-                </div>
-              </label>
-            </div>
-
-            {/* Convert Button */}
-            <button
-              onClick={handleConvert}
-              disabled={!selectedFile || isConverting || !ffmpegLoaded}
-              className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
-            >
-              {!ffmpegLoaded ? loadingMessage : isConverting ? "Extracting Audio..." : "Extract Audio to MP3"}
-            </button>
-
-            {/* Progress Bar */}
-            {isConverting && (
-              <div className="w-full bg-gray-300/50 rounded-full h-3">
-                <div 
-                  className="bg-gradient-to-r from-gray-500 to-gray-700 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-            )}
-
-            {/* Error Display */}
-            {error && (
-              <div className="bg-red-100 border border-red-300 rounded-xl p-4 backdrop-blur-sm">
-                <p className="text-red-600 text-sm">{error}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Results Section */}
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">Extraction Result</h3>
-          
-          {conversionResult ? (
-            <div className="space-y-6">
-              {/* Success Message */}
-              <div className="bg-green-500/10 border border-green-400/20 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-center space-x-2">
-                  <span className="text-green-600 text-xl">✅</span>
-                  <span className="text-green-700 font-medium text-gray-900">Audio Extraction Successful!</span>
-                </div>
-              </div>
-
-              {/* File Information */}
-              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                <h4 className="font-semibold text-gray-900 mb-3">Extraction Information</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Original Format:</span>
-                    <span className="font-medium text-gray-900 text-gray-900">{conversionResult.originalFormat}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">MP3 Quality:</span>
-                    <span className="font-medium text-gray-900">{conversionResult.quality}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Start Time:</span>
-                    <span className="font-medium text-gray-900">{formatDuration(conversionResult.startTime)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Duration:</span>
-                    <span className="font-medium text-gray-900">{formatDuration(conversionResult.duration)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Original Size:</span>
-                    <span className="font-medium text-gray-900">{formatFileSize(conversionResult.originalSize)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">MP3 Size:</span>
-                    <span className="font-medium text-gray-900">{formatFileSize(conversionResult.convertedSize)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-700">Size Reduction:</span>
-                    <span className="font-medium text-gray-900 text-green-600">
-                      {((1 - conversionResult.convertedSize / conversionResult.originalSize) * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  {conversionResult.normalize && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Audio Normalization:</span>
-                      <span className="font-medium text-gray-900 text-green-600">✓ Applied</span>
-                    </div>
-                  )}
-                  {conversionResult.conversionMethod && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-700">Conversion Method:</span>
-                      <span className="font-medium text-gray-900 text-blue-600">{conversionResult.conversionMethod}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Video Information */}
-              {conversionResult.videoInfo && (
-                <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                  <h4 className="font-semibold text-gray-900 mb-3">Original Video Info</h4>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-gray-700">Duration:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{formatDuration(conversionResult.videoInfo.duration)}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-700">Resolution:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.videoInfo.videoResolution || 'Unknown'}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-700">Video Codec:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.videoInfo.videoCodec || 'Unknown'}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-700">Audio Codec:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.videoInfo.audioCodec || 'Unknown'}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* MP3 Information */}
-              {conversionResult.mp3Info && (
-                <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-4 backdrop-blur-sm">
-                  <h4 className="font-semibold text-gray-900 mb-3">MP3 Audio Info</h4>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <span className="text-gray-700">Duration:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{formatDuration(conversionResult.mp3Info.duration)}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-700">Bitrate:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.mp3Info.bitrate ? Math.round(conversionResult.mp3Info.bitrate / 1000) + ' kbps' : 'Unknown'}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-700">Sample Rate:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.mp3Info.sampleRate ? Math.round(conversionResult.mp3Info.sampleRate / 1000) + ' kHz' : 'Unknown'}</div>
-                    </div>
-                    <div>
-                      <span className="text-gray-700">Channels:</span>
-                      <div className="font-medium text-gray-900 text-gray-900">{conversionResult.mp3Info.channels || 'Unknown'}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Download Button */}
-              <button
-                onClick={handleDownload}
-                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-4 px-6 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-green-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
-              >
-                <span>📥</span>
-                <span>Download {conversionResult.fileName}</span>
-              </button>
-            </div>
-          ) : (
-            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
-              <div className="text-6xl mb-4">🎬</div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Extract Audio</h4>
-              <p className="text-gray-700">
-                Select a video file and configure your settings to extract audio to MP3 format.
-              </p>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
+              <span className="block sm:inline">{error}</span>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Tips Section */}
-      <div className="mt-8 bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">💡 Tips for Best Results</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div className="space-y-2">
-            <div className="font-semibold text-gray-900">Time Range:</div>
-            <div className="text-gray-700">• Use MM:SS format (e.g., 1:30 for 1 minute 30 seconds)</div>
-            <div className="text-gray-700">• Leave duration empty to extract from start time to end</div>
-          </div>
-          <div className="space-y-2">
-            <div className="font-semibold text-gray-900">Quality:</div>
-            <div className="text-gray-700">• 320 kbps for highest quality</div>
-            <div className="text-gray-700">• 192 kbps for good balance of quality and size</div>
-          </div>
-          <div className="space-y-2">
-            <div className="font-semibold text-gray-900">Processing:</div>
-            <div className="text-gray-700">• Enable normalization for consistent volume levels</div>
-            <div className="text-gray-700">• Works with all major video formats</div>
-          </div>
-          <div className="space-y-2">
-            <div className="font-semibold text-gray-900">File Size:</div>
-            <div className="text-gray-700">• MP3 files are typically 10-20% of original video size</div>
-            <div className="text-gray-700">• Higher quality = larger file size</div>
-          </div>
+            {/* Convert Button - Only show after file upload and before conversion */}
+            {file && !convertedAudioUrl && (
+              <button
+                onClick={handleConvert}
+                disabled={isLoading || !isFFmpegLoaded}
+                className="w-full py-4 bg-gradient-to-r from-gray-900/90 to-gray-800/90 backdrop-blur-sm text-white font-semibold rounded-xl hover:from-gray-900 hover:to-gray-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative z-10"
+              >
+                <span className="flex items-center justify-center gap-3">
+                  {isLoading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Converting to MP3...
+                    </>
+                  ) : !isFFmpegLoaded ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Loading Converter...
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                      </svg>
+                      Convert to MP3
+                    </>
+                  )}
+                </span>
+              </button>
+            )}
+
+              {/* Download Button */}
+          {convertedAudioUrl && (
+              <button
+                onClick={handleDownload}
+              className="w-full py-3 bg-green-600/80 backdrop-blur-sm text-white font-medium rounded-xl hover:bg-green-700/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+            >
+              <span className="flex items-center justify-center gap-3">
+                <ArrowDownTrayIcon className="w-5 h-5" />
+                Download MP3 File
+              </span>
+              </button>
+          )}
         </div>
       </div>
     </div>
