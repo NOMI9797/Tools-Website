@@ -17,8 +17,10 @@ export default function MP3CompressorClient() {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [ffmpegLoaded, setFfmpegLoaded] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Loading MP3 compressor...");
+  const [compressedFileName, setCompressedFileName] = useState("");
   const [settings, setSettings] = useState<CompressionSettings>({
-    bitrate: '128',
+    bitrate: '96',
     encodingMode: 'cbr',
     quality: 'medium'
   });
@@ -43,12 +45,14 @@ export default function MP3CompressorClient() {
           setProgress(Math.round(progress * 100));
         });
 
+        setLoadingMessage("Loading FFmpeg core...");
         await ffmpeg.load({
           coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
           wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         });
         
         setFfmpegLoaded(true);
+        setLoadingMessage("MP3 compressor ready!");
         console.log('FFmpeg loaded successfully');
       } catch (error) {
         console.error('Failed to load FFmpeg:', error);
@@ -71,6 +75,7 @@ export default function MP3CompressorClient() {
       setFile(selectedFile);
       setError(null);
       setCompressedFile(null);
+      setCompressedFileName("");
     }
   };
 
@@ -98,6 +103,7 @@ export default function MP3CompressorClient() {
         if (response.ok) {
           const blob = await response.blob();
           setCompressedFile(blob);
+          setCompressedFileName(`compressed_${file.name}`);
           setIsLoading(false);
           return;
         }
@@ -147,6 +153,7 @@ export default function MP3CompressorClient() {
       const blob = new Blob([data], { type: 'audio/mpeg' });
       
       setCompressedFile(blob);
+      setCompressedFileName(`compressed_${file.name}`);
       
       // Cleanup
       await ffmpeg.deleteFile('input.mp3');
@@ -165,11 +172,22 @@ export default function MP3CompressorClient() {
       const url = URL.createObjectURL(compressedFile);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `compressed_${file?.name || 'audio.mp3'}`;
+      a.download = compressedFileName || `compressed_${file?.name || 'audio.mp3'}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleReset = () => {
+    setFile(null);
+    setCompressedFile(null);
+    setCompressedFileName("");
+    setError(null);
+    setProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -203,187 +221,295 @@ export default function MP3CompressorClient() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      {/* File Upload */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select MP3 File
-        </label>
-        <div className="flex items-center space-x-4">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="audio/mpeg,.mp3"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Choose MP3 File
-          </button>
-          {file && (
-            <span className="text-sm text-gray-600">
-              {file.name} ({formatFileSize(file.size)})
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Compression Settings */}
-      {file && (
-        <div className="mb-6 space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900">Compression Settings</h3>
+    <div className="bg-transparent">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Input Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Upload MP3 File</h3>
           
-          {/* Bitrate */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bitrate
-            </label>
-            <select
-              value={settings.bitrate}
-              onChange={(e) => setSettings({...settings, bitrate: e.target.value as any})}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="320">320 kbps - High quality</option>
-              <option value="256">256 kbps - Very good quality</option>
-              <option value="192">192 kbps - Good quality</option>
-              <option value="128">128 kbps - Standard quality</option>
-              <option value="96">96 kbps - Lower quality</option>
-              <option value="64">64 kbps - Low quality</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {getBitrateDescription(settings.bitrate)}
-            </p>
-          </div>
+          <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+            <div className="space-y-6">
+              {/* File Upload */}
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="audio/mpeg,.mp3"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full p-8 border-2 border-dashed border-gray-400/50 rounded-xl hover:border-gray-500/50 transition-all duration-200 bg-gray-300/30 hover:bg-gray-300/50"
+                >
+                  <div className="text-center">
+                    <div className="text-4xl mb-3">🎵</div>
+                    <div className="text-lg font-semibold text-gray-900 mb-2">
+                      {file ? "Change MP3 File" : "Select MP3 File"}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      MP3 audio files only
+                    </div>
+                    {file && (
+                      <div className="mt-3 text-sm text-gray-700">
+                        {file.name} ({formatFileSize(file.size)})
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </div>
 
-          {/* Encoding Mode */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Encoding Mode
-            </label>
-            <select
-              value={settings.encodingMode}
-              onChange={(e) => setSettings({...settings, encodingMode: e.target.value as any})}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="cbr">CBR - Constant Bitrate</option>
-              <option value="vbr">VBR - Variable Bitrate</option>
-              <option value="abr">ABR - Average Bitrate</option>
-            </select>
-            <p className="text-xs text-gray-500 mt-1">
-              {getEncodingModeDescription(settings.encodingMode)}
-            </p>
-          </div>
+              {/* Compression Settings */}
+              {file && (
+                <div className="space-y-4">
+                  <h4 className="text-md font-semibold text-gray-900">Compression Settings</h4>
+                  
+                  {/* Bitrate */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Bitrate
+                    </label>
+                    <select
+                      value={settings.bitrate}
+                      onChange={(e) => setSettings({...settings, bitrate: e.target.value as any})}
+                      className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 transition-all duration-200"
+                    >
+                      <option value="320">320 kbps - High quality</option>
+                      <option value="256">256 kbps - Very good quality</option>
+                      <option value="192">192 kbps - Good quality</option>
+                      <option value="128">128 kbps - Standard quality</option>
+                      <option value="96">96 kbps - Lower quality</option>
+                      <option value="64">64 kbps - Low quality</option>
+                    </select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {getBitrateDescription(settings.bitrate)}
+                    </p>
+                  </div>
 
-          {/* Quality (for VBR) */}
-          {settings.encodingMode === 'vbr' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                VBR Quality
-              </label>
-              <select
-                value={settings.quality}
-                onChange={(e) => setSettings({...settings, quality: e.target.value as any})}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="high">High Quality (0)</option>
-                <option value="medium">Medium Quality (4)</option>
-                <option value="low">Low Quality (9)</option>
-              </select>
-              <p className="text-xs text-gray-500 mt-1">
-                Lower numbers = higher quality, larger file size
+                  {/* Encoding Mode */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Encoding Mode
+                    </label>
+                    <select
+                      value={settings.encodingMode}
+                      onChange={(e) => setSettings({...settings, encodingMode: e.target.value as any})}
+                      className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 transition-all duration-200"
+                    >
+                      <option value="cbr">CBR - Constant Bitrate</option>
+                      <option value="vbr">VBR - Variable Bitrate</option>
+                      <option value="abr">ABR - Average Bitrate</option>
+                    </select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {getEncodingModeDescription(settings.encodingMode)}
+                    </p>
+                  </div>
+
+                  {/* Quality (for VBR) */}
+                  {settings.encodingMode === 'vbr' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        VBR Quality
+                      </label>
+                      <select
+                        value={settings.quality}
+                        onChange={(e) => setSettings({...settings, quality: e.target.value as any})}
+                        className="w-full px-4 py-3 border border-gray-300/50 rounded-xl text-gray-900 bg-gray-300/50 focus:outline-none focus:ring-2 focus:ring-gray-500/50 focus:border-gray-500/50 transition-all duration-200"
+                      >
+                        <option value="high">High Quality (0)</option>
+                        <option value="medium">Medium Quality (4)</option>
+                        <option value="low">Low Quality (9)</option>
+                      </select>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Lower numbers = higher quality, larger file size
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {file && (
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleCompress}
+                    disabled={isLoading || !ffmpegLoaded}
+                    className="flex-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+                  >
+                    {isLoading ? `Compressing... ${progress}%` : 'Compress MP3'}
+                  </button>
+                  
+                  <button
+                    onClick={handleReset}
+                    className="px-6 py-4 bg-gray-300/50 text-gray-900 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50 font-semibold"
+                  >
+                    Reset
+                  </button>
+                </div>
+              )}
+
+              {/* Progress Bar */}
+              {isLoading && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-700">
+                    <span>Compressing audio...</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-300/50 rounded-full h-3">
+                    <div 
+                      className="bg-gradient-to-r from-gray-600 to-gray-700 h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Display */}
+              {error && (
+                <div className="bg-red-200/50 border border-red-300/50 rounded-xl p-4 backdrop-blur-sm">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Results Section */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">Compression Result</h3>
+          
+          {compressedFile ? (
+            <div className="space-y-6">
+              {/* Audio Preview */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Compressed Audio</h4>
+                <audio
+                  src={URL.createObjectURL(compressedFile)}
+                  controls
+                  className="w-full"
+                >
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+
+              {/* Download Section */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Download</h4>
+                <div className="space-y-4">
+                  <button
+                    onClick={handleDownload}
+                    className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white py-4 px-6 rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all duration-200 shadow-lg hover:shadow-gray-500/25 transform hover:-translate-y-0.5 font-semibold text-lg"
+                  >
+                    Download Compressed MP3
+                  </button>
+                  
+                  <button
+                    onClick={handleReset}
+                    className="w-full bg-gray-300/50 text-gray-900 py-3 px-6 rounded-xl hover:bg-gray-400/50 transition-all duration-200 border border-gray-300/50 font-semibold"
+                  >
+                    Compress Another MP3
+                  </button>
+                </div>
+              </div>
+
+              {/* Compression Details */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Compression Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-gray-300/50 p-4 rounded-lg">
+                    <h5 className="font-medium text-gray-900 mb-2">Original</h5>
+                    <p className="text-sm text-gray-700">Size: {formatFileSize(file?.size || 0)}</p>
+                  </div>
+                  <div className="bg-gray-300/50 p-4 rounded-lg">
+                    <h5 className="font-medium text-gray-900 mb-2">Compressed</h5>
+                    <p className="text-sm text-gray-700">Size: {formatFileSize(compressedFile.size)}</p>
+                  </div>
+                </div>
+                
+                <div className="mt-4 bg-gray-300/50 p-4 rounded-lg">
+                  <h5 className="font-medium text-gray-900 mb-2">Compression Ratio</h5>
+                  <p className="text-sm text-gray-700">
+                    {file && compressedFile && (
+                      <>
+                        {Math.round(((file.size - compressedFile.size) / file.size) * 100)}% smaller
+                        <br />
+                        {formatFileSize(file.size - compressedFile.size)} saved
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <div className="mt-4 bg-gray-300/50 p-4 rounded-lg">
+                  <h5 className="font-medium text-gray-900 mb-2">Settings Used</h5>
+                  <p className="text-sm text-gray-700">
+                    Bitrate: {settings.bitrate} kbps<br />
+                    Mode: {settings.encodingMode.toUpperCase()}<br />
+                    {settings.encodingMode === 'vbr' && `Quality: ${settings.quality}`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : file ? (
+            <div className="space-y-6">
+              {/* Audio Preview */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">Original Audio</h4>
+                <audio
+                  src={URL.createObjectURL(file)}
+                  controls
+                  className="w-full"
+                >
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+
+              {/* File Information */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">File Information</h4>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div><span className="font-medium">Name:</span> {file.name}</div>
+                  <div><span className="font-medium">Size:</span> {formatFileSize(file.size)}</div>
+                  <div><span className="font-medium">Type:</span> {file.type}</div>
+                </div>
+              </div>
+
+              {/* Ready to Compress */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+                <div className="text-6xl mb-4">🎵</div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Compress</h4>
+                <p className="text-gray-700">
+                  Configure your compression settings and click "Compress MP3" to start.
+                </p>
+              </div>
+
+              {/* Compression Tips */}
+              <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+                <h4 className="text-md font-semibold text-gray-900 mb-4">💡 Compression Tips</h4>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div>• <strong>Lower bitrate</strong> = Smaller file size</div>
+                  <div>• <strong>VBR mode</strong> = Better compression for music</div>
+                  <div>• <strong>CBR mode</strong> = Consistent quality</div>
+                  <div>• <strong>For maximum compression:</strong> Use 64 kbps, VBR, Low quality</div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+              <div className="text-6xl mb-4">🎵</div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-2">Ready to Compress</h4>
+              <p className="text-gray-700">
+                Select an MP3 file to start compressing it and reducing its file size.
               </p>
             </div>
           )}
         </div>
-      )}
-
-      {/* Compress Button */}
-      {file && (
-        <div className="mb-6">
-          <button
-            onClick={handleCompress}
-            disabled={isLoading || !ffmpegLoaded}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? `Compressing... ${progress}%` : 'Compress MP3'}
-          </button>
-        </div>
-      )}
-
-      {/* Progress */}
-      {isLoading && (
-        <div className="mb-6">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
-
-      {/* Error */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600">{error}</p>
-        </div>
-      )}
-
-      {/* Results */}
-      {compressedFile && (
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Compression Results</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-white p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Original</h4>
-              <p className="text-sm text-gray-600">Size: {formatFileSize(file?.size || 0)}</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg">
-              <h4 className="font-medium text-gray-900 mb-2">Compressed</h4>
-              <p className="text-sm text-gray-600">Size: {formatFileSize(compressedFile.size)}</p>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg mb-4">
-            <h4 className="font-medium text-gray-900 mb-2">Compression Ratio</h4>
-            <p className="text-sm text-gray-600">
-              {file && compressedFile && (
-                <>
-                  {Math.round(((file.size - compressedFile.size) / file.size) * 100)}% smaller
-                  <br />
-                  {formatFileSize(file.size - compressedFile.size)} saved
-                </>
-              )}
-            </p>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg mb-4">
-            <h4 className="font-medium text-gray-900 mb-2">Settings Used</h4>
-            <p className="text-sm text-gray-600">
-              Bitrate: {settings.bitrate} kbps<br />
-              Mode: {settings.encodingMode.toUpperCase()}<br />
-              {settings.encodingMode === 'vbr' && `Quality: ${settings.quality}`}
-            </p>
-          </div>
-
-          <button
-            onClick={handleDownload}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Download Compressed MP3
-          </button>
-        </div>
-      )}
+      </div>
 
       {/* Loading Status */}
       {!ffmpegLoaded && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading MP3 compressor...</p>
+        <div className="mt-8 bg-gray-200/50 border border-gray-300/50 rounded-xl p-8 text-center backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-600 mx-auto mb-4"></div>
+          <p className="text-gray-700 text-lg">{loadingMessage}</p>
         </div>
       )}
     </div>
