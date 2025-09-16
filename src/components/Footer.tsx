@@ -3,12 +3,12 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer className="border-t border-gray-800/30 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+        <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-4 lg:gap-6 items-start">
+          {/* Company Info (hidden on mobile to keep 3 inline columns) */}
+          <div className="hidden sm:block space-y-3 sm:space-y-4 sm:col-span-1">
             <div>
-              <Link href="/" className="font-bold text-xl text-white hover:text-gray-300 transition-colors">
+              <Link href="/" className="font-bold text-lg sm:text-xl text-white hover:text-gray-300 transition-colors">
                 Toolbox
               </Link>
               <p className="text-sm text-gray-300 mt-2">
@@ -39,56 +39,56 @@ export default function Footer() {
           </div>
 
           {/* Tools */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Tools</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/convert" className="text-gray-300 hover:text-white transition-colors">Convert Files</Link></li>
-              <li><Link href="/compress" className="text-gray-300 hover:text-white transition-colors">Compress Files</Link></li>
-              <li><Link href="/convert/image-converter" className="text-gray-300 hover:text-white transition-colors">Image Converter</Link></li>
-              <li><Link href="/convert/video-mp3" className="text-gray-300 hover:text-white transition-colors">Video to MP3</Link></li>
-              <li><Link href="/convert/pdf-to-images" className="text-gray-300 hover:text-white transition-colors">PDF to Images</Link></li>
-              <li><Link href="/compress/image-compressor" className="text-gray-300 hover:text-white transition-colors">Image Compressor</Link></li>
+          <div className="space-y-1.5 sm:space-y-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-white uppercase tracking-wide">Tools</h3>
+            <ul className="grid grid-cols-1 gap-0.5 sm:space-y-1.5 text-[11px] sm:text-sm">
+              <li><Link href="/convert" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Convert Files</Link></li>
+              <li><Link href="/compress" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Compress Files</Link></li>
+              <li><Link href="/convert/image-converter" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Image Converter</Link></li>
+              <li><Link href="/convert/video-mp3" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Video to MP3</Link></li>
+              <li><Link href="/convert/pdf-to-images" className="block py-0.5 text-gray-300 hover:text-white transition-colors">PDF to Images</Link></li>
+              <li><Link href="/compress/image-compressor" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Image Compressor</Link></li>
             </ul>
           </div>
 
           {/* Company */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Company</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/about" className="text-gray-300 hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/contact" className="text-gray-300 hover:text-white transition-colors">Contact</Link></li>
-              <li><Link href="/blog" className="text-gray-300 hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href="/careers" className="text-gray-300 hover:text-white transition-colors">Careers</Link></li>
-              <li><Link href="/press" className="text-gray-300 hover:text-white transition-colors">Press</Link></li>
-              <li><Link href="/partners" className="text-gray-300 hover:text-white transition-colors">Partners</Link></li>
+          <div className="space-y-1.5 sm:space-y-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-white uppercase tracking-wide">Company</h3>
+            <ul className="grid grid-cols-1 gap-0.5 sm:space-y-1.5 text-[11px] sm:text-sm">
+              <li><Link href="/about" className="block py-0.5 text-gray-300 hover:text-white transition-colors">About Us</Link></li>
+              <li><Link href="/contact" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link href="/blog" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Blog</Link></li>
+              <li><Link href="/careers" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Careers</Link></li>
+              <li><Link href="/press" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Press</Link></li>
+              <li><Link href="/partners" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Partners</Link></li>
             </ul>
           </div>
 
           {/* Legal */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Legal</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/terms-of-service" className="text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link href="/cookie-policy" className="text-gray-300 hover:text-white transition-colors">Cookie Policy</Link></li>
-              <li><Link href="/dmca" className="text-gray-300 hover:text-white transition-colors">DMCA</Link></li>
-              <li><Link href="/gdpr" className="text-gray-300 hover:text-white transition-colors">GDPR</Link></li>
-              <li><Link href="/accessibility" className="text-gray-300 hover:text-white transition-colors">Accessibility</Link></li>
+          <div className="space-y-1.5 sm:space-y-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-white uppercase tracking-wide">Legal</h3>
+            <ul className="grid grid-cols-1 gap-0.5 sm:space-y-1.5 text-[11px] sm:text-sm">
+              <li><Link href="/privacy-policy" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms-of-service" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/cookie-policy" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Cookie Policy</Link></li>
+              <li><Link href="/dmca" className="block py-0.5 text-gray-300 hover:text-white transition-colors">DMCA</Link></li>
+              <li><Link href="/gdpr" className="block py-0.5 text-gray-300 hover:text-white transition-colors">GDPR</Link></li>
+              <li><Link href="/accessibility" className="block py-0.5 text-gray-300 hover:text-white transition-colors">Accessibility</Link></li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-12 pt-8 border-t border-gray-700/30">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="text-sm text-gray-400">
+        <div className="mt-6 sm:mt-10 pt-4 sm:pt-6 border-t border-gray-700/30">
+          <div className="flex flex-row flex-wrap justify-between items-center gap-3">
+            <div className="text-xs sm:text-sm text-gray-400">
               © {new Date().getFullYear()} Toolbox. All rights reserved.
             </div>
-            <div className="flex items-center space-x-6 text-sm text-gray-400">
+            <div className="flex flex-row flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-gray-400">
               <span>Made with ❤️ for developers</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>100% Free & Open Source</span>
-              <span>•</span>
+              <span className="hidden sm:inline">•</span>
               <span>No Registration Required</span>
             </div>
           </div>
