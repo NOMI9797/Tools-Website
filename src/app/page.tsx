@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { Metadata } from 'next';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import ImageConverterHero from "./ImageConverterHero";
 
 export const metadata: Metadata = {
@@ -21,60 +24,75 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
-      {/* Hero Section - Image Converter */}
-      <section className="relative pt-2 pb-16 sm:pt-3 sm:pb-20 bg-transparent overflow-hidden">
-        {/* Background Elements */}
+      {/* Futuristic Hero */}
+      <section className="relative overflow-hidden pt-16 pb-14 sm:pt-20 sm:pb-20">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 opacity-60" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='1.5'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '60px 60px'
-          }}></div>
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-gray-400/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gray-500/20 rounded-full blur-3xl"></div>
+          <div className="absolute -top-32 -left-20 h-80 w-80 rounded-full bg-gradient-to-br from-gray-400/40 to-gray-600/30 blur-3xl" />
+          <div className="absolute -bottom-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-gradient-to-tr from-gray-500/30 to-gray-700/30 blur-[90px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.35),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.25),transparent_35%)]" />
         </div>
-        
+
         <div className="relative w-full px-4 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-6 py-3 rounded-full bg-gray-200/50 border border-gray-300/50 text-gray-800 text-sm font-medium mb-6 backdrop-blur-md">
-              <div className="w-2 h-2 bg-gray-600 rounded-full mr-3 animate-pulse"></div>
-              Enterprise-Grade File Processing
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center px-5 py-2.5 rounded-full bg-white/50 border border-gray-300/60 text-gray-900 text-sm font-medium mb-5 backdrop-blur-md shadow-sm">
+              <div className="w-2 h-2 bg-gray-800 rounded-full mr-3 animate-pulse" />
+              AI-Ready Conversion & Compression
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Professional File
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-800">
-                Processing Suite
-              </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+              Convert. Compress. Create.
             </h1>
-            <p className="text-lg sm:text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
-              Transform, compress, and optimize any file format with enterprise-grade tools. 
-              <span className="text-gray-900 font-semibold"> Secure, fast, and completely free</span> - no registration required.
+            <p className="mt-5 text-base sm:text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed">
+              A unified toolkit for images, video, audio, and documents. Fast, private, and entirely free.
             </p>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/convert" className="px-7 py-3 rounded-xl text-white bg-gray-900/90 hover:bg-gray-900 transition-all duration-300 shadow-lg hover:shadow-xl">
+                Explore Converters
+              </Link>
+              <Link href="/compress" className="px-7 py-3 rounded-xl border-2 border-gray-800/70 text-gray-900 hover:bg-gray-900/5 transition-all duration-300">
+                Explore Compressors
+              </Link>
+            </div>
           </div>
 
-          {/* Image Converter Interface */}
-          <ImageConverterHero />
-
-          {/* Quick Access Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-              <Link 
-              href="/convert/image-converter" 
-              className="px-8 py-3 bg-gray-900/90 backdrop-blur-md border border-gray-700/50 text-white rounded-xl font-medium hover:bg-gray-800 hover:border-gray-600/50 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-              Try Full Image Converter →
-              </Link>
-              <Link 
-              href="/convert" 
-              className="px-8 py-3 border-2 border-gray-700/50 text-gray-900 rounded-xl font-medium hover:bg-gray-800/50 hover:border-gray-600/50 transition-all duration-300 backdrop-blur-sm"
-            >
-              View All Converters
-              </Link>
+          {/* Glass Showcase - Centered Image Converter */}
+          <div className="max-w-3xl mx-auto">
+            <div className="rounded-2xl border border-gray-300/50 bg-white/50 backdrop-blur-lg p-5 sm:p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                  <span className="text-xl">🎨</span>
+                  Quick Image Convert
+                </h2>
+                <Link href="/convert/image-converter" className="text-sm font-medium text-gray-700 hover:text-gray-900">Open</Link>
+              </div>
+              <div className="rounded-xl border border-gray-300/50 bg-gray-100/60 p-3">
+                <ImageConverterHero />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-
+      {/* Feature Highlights */}
+      <section className="w-full px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {[ 
+            { title: 'Private by Design', desc: 'Client-side processing where possible. Your files stay with you.', icon: '🔒' },
+            { title: 'Fast Performance', desc: 'WASM/FFmpeg acceleration and tuned server fallbacks.', icon: '⚡' },
+            { title: 'Crisp Results', desc: 'Thoughtful defaults for quality and size balance.', icon: '🎯' },
+            { title: 'Totally Free', desc: 'No sign-up. No watermarks. No limits.', icon: '💎' },
+          ].map((f) => (
+            <div key={f.title} className="rounded-2xl border border-gray-300/50 bg-white/50 backdrop-blur-lg p-5 sm:p-6 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gray-900/90 text-white flex items-center justify-center text-lg">{f.icon}</div>
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900">{f.title}</h3>
+                  <p className="text-sm text-gray-700 mt-1">{f.desc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </>
   );
 }

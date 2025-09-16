@@ -2,62 +2,58 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { ArrowDownTrayIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import FileUpload from '@/components/FileUpload';
 
 type TargetFormat = 'jpg' | 'png' | 'webp' | 'svg';
 
 export default function ImageConverterHero() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [convertedImageUrl, setConvertedImageUrl] = useState<string | null>(null);
   const [convertedFileName, setConvertedFileName] = useState<string>('');
   const [target, setTarget] = useState<TargetFormat>('png');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingFileName, setUploadingFileName] = useState('');
+  const [convertProgress, setConvertProgress] = useState(0);
 
   const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
   const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'image/gif', 'image/bmp', 'image/tiff'];
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      if (!ALLOWED_MIME_TYPES.includes(selectedFile.type) && !selectedFile.name.match(/\.(jpg|jpeg|png|webp|svg|gif|bmp|tiff)$/i)) {
-        setError('Please select a valid image file (JPG, PNG, WEBP, SVG, GIF, BMP, TIFF).');
-        return;
-      }
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setError(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
-        return;
-      }
-      setFile(selectedFile);
-      setError(null);
+  const ALLOWED_EXTENSIONS = ['jpg','jpeg','png','webp','svg','gif','bmp','tiff'];
+  const handleFileChange = (selectedFile: File | null) => {
+    if (!selectedFile) {
+      setFile(null);
       setConvertedImageUrl(null);
       setConvertedFileName('');
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const selectedFile = e.dataTransfer.files?.[0];
-    if (selectedFile) {
-      if (!ALLOWED_MIME_TYPES.includes(selectedFile.type) && !selectedFile.name.match(/\.(jpg|jpeg|png|webp|svg|gif|bmp|tiff)$/i)) {
-        setError('Please select a valid image file (JPG, PNG, WEBP, SVG, GIF, BMP, TIFF).');
-        return;
-      }
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        setError(`File size exceeds the limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
-        return;
-      }
-      setFile(selectedFile);
+      setIsUploading(false);
+      setUploadProgress(0);
+      setUploadingFileName('');
       setError(null);
-      setConvertedImageUrl(null);
-      setConvertedFileName('');
+      return;
     }
-  };
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadingFileName(selectedFile.name);
+    setError(null);
+    setConvertedImageUrl(null);
+    setConvertedFileName('');
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+    let current = 0;
+    const interval = setInterval(() => {
+      current += Math.random() * 20 + 5;
+      if (current >= 100) {
+        current = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadProgress(100);
+          setFile(selectedFile);
+          setUploadingFileName('');
+        }, 200);
+      }
+      setUploadProgress(current);
+    }, 150);
   };
 
   const handleConvert = useCallback(async () => {
@@ -66,10 +62,19 @@ export default function ImageConverterHero() {
       return;
     }
     setIsLoading(true);
+    setConvertProgress(0);
     setError(null);
     setConvertedImageUrl(null);
 
     try {
+      // Simulated converting progress while waiting for server
+      let current = 0;
+      const interval = setInterval(() => {
+        current += Math.random() * 15 + 5;
+        if (current >= 95) current = 95;
+        setConvertProgress(current);
+      }, 200);
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('target', target);
@@ -90,6 +95,7 @@ export default function ImageConverterHero() {
       setConvertedImageUrl(url);
       const newFileName = file.name.replace(/\.[^/.]+$/, "") + `.${target === 'jpeg' ? 'jpg' : target}`;
       setConvertedFileName(newFileName);
+      setConvertProgress(100);
 
     } catch (err: any) {
       console.error('Conversion error:', err);
@@ -115,9 +121,10 @@ export default function ImageConverterHero() {
     setConvertedImageUrl(null);
     setConvertedFileName('');
     setError(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setIsUploading(false);
+    setUploadProgress(0);
+    setUploadingFileName('');
+    setConvertProgress(0);
   };
 
   return (
@@ -134,25 +141,35 @@ export default function ImageConverterHero() {
       
       <div className="bg-transparent p-8">
         <div className="space-y-6">
-          {/* Upload Area */}
-          <div 
-            className="border-2 border-dashed border-gray-300/20 rounded-xl p-12 text-center hover:border-gray-400/30 transition-all duration-200 cursor-pointer group"
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <div className="text-6xl mb-6 group-hover:scale-110 transition-transform">🖼️</div>
-            <div className="text-gray-700 font-medium mb-2 text-lg">Click to select or drag & drop</div>
-            <div className="text-sm text-gray-600">Supports: JPG, PNG, WEBP, SVG, GIF, BMP, TIFF</div>
-            <div className="text-xs text-gray-500 mt-2">Max file size: 50MB</div>
-          </div>
+          {/* Upload Area via FileUpload */}
+          <FileUpload
+            placeholder="Choose Files"
+            icon="🖼️"
+            maxFileSize={MAX_FILE_SIZE}
+            allowedMimeTypes={ALLOWED_MIME_TYPES}
+            allowedExtensions={ALLOWED_EXTENSIONS}
+            onFileChange={handleFileChange}
+            onError={setError}
+          />
+
+          {/* Upload Progress */}
+          {isUploading && (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium text-gray-700">Uploading {uploadingFileName}...</span>
+                </div>
+                <span className="text-sm text-gray-500">{Math.round(uploadProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-300/50 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
           
           {file && (
             <div className="p-4 bg-gray-200/20 border border-gray-300/20 rounded-xl backdrop-blur-sm">
@@ -190,7 +207,7 @@ export default function ImageConverterHero() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Converting...
+                  Converting... {Math.round(convertProgress)}%
                 </>
               ) : (
                 <>
@@ -202,6 +219,25 @@ export default function ImageConverterHero() {
               )}
             </span>
           </button>
+
+          {/* Converting Progress */}
+          {isLoading && (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium text-gray-700">Converting image...</span>
+                </div>
+                <span className="text-sm text-gray-500">{Math.round(convertProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-300/50 rounded-full h-2">
+                <div
+                  className="bg-gradient-to-r from-gray-500 to-gray-700 h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${convertProgress}%` }}
+                ></div>
+              </div>
+            </div>
+          )}
 
           {/* Download Button */}
           {convertedImageUrl && (

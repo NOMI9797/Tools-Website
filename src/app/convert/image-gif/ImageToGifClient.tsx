@@ -15,6 +15,9 @@ export default function ImageToGifClient() {
   const [ready, setReady] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("Loading FFmpeg...");
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingFileName, setUploadingFileName] = useState("");
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per image
   const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
@@ -25,17 +28,43 @@ export default function ImageToGifClient() {
     setGifUrl(null);
     setConvertedFileName('');
     setError(null);
+    setIsUploading(false);
+    setUploadProgress(0);
+    setUploadingFileName("");
   };
 
   const handleFileChange = (selectedFiles: File[] | null) => {
-    if (selectedFiles && selectedFiles.length > 0) {
-      setImages(selectedFiles);
-      setError(null);
-      setGifUrl(null);
-      setConvertedFileName('');
-    } else {
+    if (!selectedFiles || selectedFiles.length === 0) {
       resetState();
+      return;
     }
+    const first = selectedFiles[0];
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadingFileName(first.name + (selectedFiles.length > 1 ? ` +${selectedFiles.length - 1}` : ''));
+    setError(null);
+    setGifUrl(null);
+    setConvertedFileName('');
+
+    let current = 0;
+    const interval = setInterval(() => {
+      current += Math.random() * 20 + 5;
+      if (current >= 100) {
+        current = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadProgress(100);
+          setImages(prev => {
+            const existing = new Set(prev.map(f => `${f.name}:${f.size}`));
+            const toAdd = selectedFiles.filter(f => !existing.has(`${f.name}:${f.size}`));
+            return [...prev, ...toAdd];
+          });
+          setUploadingFileName("");
+        }, 200);
+      }
+      setUploadProgress(current);
+    }, 150);
   };
 
   useEffect(() => {
@@ -208,6 +237,25 @@ export default function ImageToGifClient() {
             onError={setError}
             multiple={true}
           />
+
+          {/* Upload Progress */}
+          {isUploading && (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium text-gray-700">Uploading {uploadingFileName}...</span>
+                </div>
+                <span className="text-sm text-gray-500">{Math.round(uploadProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-300/50 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">

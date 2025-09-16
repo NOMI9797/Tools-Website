@@ -94,7 +94,7 @@ export default function ConvertPage() {
   ];
 
   return (
-    <div className="space-y-12">
+    <div className="w-full pt-16 pb-6 px-4 sm:px-6 lg:px-8 space-y-12">
       <header className="space-y-2">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900">Convert</h1>
         <p className="text-sm text-gray-700">Free file conversion utilities covering images, documents, video, and audio.</p>
@@ -110,34 +110,25 @@ export default function ConvertPage() {
             <p className="text-sm text-gray-700">{category.desc}</p>
           </div>
 
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {category.tools.map((tool) => (
               <a
                 key={tool.id}
                 id={tool.id}
                 href={tool.implemented ? tool.href : "#coming-soon"}
-                className={`group rounded-xl border border-gray-300/50 bg-gray-200/50 backdrop-blur-md p-5 sm:p-6 transition-all shadow-sm ${
-                  tool.implemented ? "hover:shadow-lg hover:border-gray-500/50" : "opacity-50 cursor-not-allowed"
+                className={`group rounded-2xl border border-gray-300/50 bg-gray-200/50 backdrop-blur-md p-5 sm:p-6 transition-all shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/60 ${
+                  tool.implemented ? "hover:-translate-y-0.5 hover:shadow-xl hover:border-gray-500/60" : "opacity-50 cursor-not-allowed"
                 }`}
               >
-                <div className="flex items-start gap-4">
-                  <div className="text-2xl">{tool.icon}</div>
-                  <div className="space-y-1.5">
-                    <h3 className="font-medium tracking-tight group-hover:opacity-90 text-gray-900">
-                      {tool.title}
-                      {!tool.implemented && <span className="ml-2 text-xs text-gray-600">(Coming Soon)</span>}
-                    </h3>
-                    <p className="text-sm text-gray-700">{tool.desc}</p>
+                <div className="flex items-center gap-4">
+                  <div className="h-10 w-10 rounded-xl bg-white/70 flex items-center justify-center text-xl shadow-sm">
+                    {tool.icon}
                   </div>
+                  <h3 className="text-base font-medium tracking-tight group-hover:opacity-90 text-gray-900">
+                    {tool.title}
+                    {!tool.implemented && <span className="ml-2 text-xs text-gray-600">(Coming Soon)</span>}
+                  </h3>
                 </div>
-                {tool.implemented && (
-                  <div className="mt-4">
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-gray-600">
-                      Open
-                      <span aria-hidden>→</span>
-                    </span>
-                  </div>
-                )}
               </a>
             ))}
           </div>

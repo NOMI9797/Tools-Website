@@ -4,6 +4,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -56,7 +59,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 min-h-screen flex flex-col`}
       >
         <header className="sticky top-0 z-50 bg-transparent">
-          <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+          <nav className="w-full px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
             <div className="flex items-center gap-12">
               <Link href="/" className="group flex items-center gap-3 font-bold tracking-tight text-2xl text-gray-900 hover:text-gray-700 transition-colors">
                 <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
@@ -82,7 +85,8 @@ export default function RootLayout({
                     </span>
                     <div className="absolute inset-0 bg-white/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute left-0 top-full mt-3 w-[800px] rounded-2xl border border-gray-700/30 bg-gray-900 shadow-2xl p-6 z-[99999]">
+                  <div className="invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 absolute left-0 top-full mt-2 rounded-xl border border-gray-700/30 bg-gray-900/95 backdrop-blur-md shadow-2xl p-4 z-[99999] min-w-[720px]">
+                    <div className="absolute -top-2 left-10 w-4 h-4 bg-gray-900/95 border-t border-l border-gray-700/30 rotate-45"></div>
                     <div className="grid grid-cols-3 gap-2">
                       {/* Video & Audio */}
                       <div className="space-y-1">
@@ -215,7 +219,8 @@ export default function RootLayout({
                     </span>
                     <div className="absolute inset-0 bg-white/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
                   </Link>
-                  <div className="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-300 absolute left-0 top-full mt-3 w-[650px] rounded-2xl border border-gray-700/30 bg-gray-900 shadow-2xl p-6 z-[99999]">
+                  <div className="invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 absolute left-0 top-full mt-2 rounded-xl border border-gray-700/30 bg-gray-900/95 backdrop-blur-md shadow-2xl p-4 z-[99999] min-w-[560px]">
+                    <div className="absolute -top-2 left-10 w-4 h-4 bg-gray-900/95 border-t border-l border-gray-700/30 rotate-45"></div>
                     <div className="grid grid-cols-2 gap-2">
                       {/* Video & Audio */}
                       <div className="space-y-1">
@@ -296,8 +301,8 @@ export default function RootLayout({
             </div>
           </nav>
         </header>
-        <main className="flex-1 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {children}
+        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8">
+          {children}
         </main>
         <Footer />
       </body>

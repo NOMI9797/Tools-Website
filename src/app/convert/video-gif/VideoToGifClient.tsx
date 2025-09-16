@@ -13,6 +13,9 @@ export default function VideoToGifClient() {
   const [progress, setProgress] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Loading FFmpeg...");
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingFileName, setUploadingFileName] = useState("");
 
   const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
   const ALLOWED_MIME_TYPES = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv', 'video/flv', 'video/webm'];
@@ -23,17 +26,39 @@ export default function VideoToGifClient() {
     setGif(null);
     setConvertedFileName('');
     setError(null);
+    setIsUploading(false);
+    setUploadProgress(0);
+    setUploadingFileName("");
   };
 
   const handleFileChange = (selectedFile: File | null) => {
-    if (selectedFile) {
-      setVideo(selectedFile);
-      setError(null);
-      setGif(null);
-      setConvertedFileName('');
-    } else {
+    if (!selectedFile) {
       resetState();
+      return;
     }
+    // Simulate upload progress for UX
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadingFileName(selectedFile.name);
+    setError(null);
+    setGif(null);
+    setConvertedFileName('');
+
+    let current = 0;
+    const interval = setInterval(() => {
+      current += Math.random() * 20 + 5;
+      if (current >= 100) {
+        current = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          setIsUploading(false);
+          setUploadProgress(100);
+          setVideo(selectedFile);
+          setUploadingFileName("");
+        }, 200);
+      }
+      setUploadProgress(current);
+    }, 150);
   };
 
   // Load FFmpeg dynamically on client side only
@@ -187,6 +212,25 @@ export default function VideoToGifClient() {
             onFileChange={handleFileChange}
             onError={setError}
           />
+
+          {/* Upload Progress */}
+          {isUploading && (
+            <div className="bg-gray-200/50 border border-gray-300/50 rounded-xl p-6 backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="text-sm font-medium text-gray-700">Uploading {uploadingFileName}...</span>
+                </div>
+                <span className="text-sm text-gray-500">{Math.round(uploadProgress)}%</span>
+              </div>
+              <div className="w-full bg-gray-300/50 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl relative" role="alert">
